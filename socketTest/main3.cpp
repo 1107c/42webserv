@@ -38,17 +38,17 @@ std::string create_http_response() {
 }
 
 int main() {	
-	int listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+	int listen_sock = socket(AF_INET, SOCK_STREAM, 0);					//AF_INET << IPv4 - SOCK_STREAM << TCP
     if (listen_sock == 0) {
         std::cerr << "Socket creation failed" << std::endl;
         return 1;
     }
 
-    int flags = fcntl(listen_sock, F_GETFL, 0);
-    fcntl(listen_sock, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(listen_sock, F_GETFL, 0);							//	첫번째 인자 대상 F_GETFL << 현재설정 가져오기 
+    fcntl(listen_sock, F_SETFL, flags | O_NONBLOCK);					// 첫번째 대상 F_SETFL << SET | O_NONBLOCK 기능만 추가
 
     int opt = 1;
-    if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {				// 재사용을 위한 SO_REUSEADDR 예상치못한 종료에 의해서
         std::cerr << "setsockopt failed" << std::endl;
         return 1;
     }
@@ -56,30 +56,30 @@ int main() {
     struct sockaddr_in address;
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(8080);
+    address.sin_addr.s_addr = INADDR_ANY;			// 주소 대응
+    address.sin_port = htons(8080);					// AF_INET IPv4  INADDR_ANY  port == 사용할 포트 입력 htons
 
-    if (bind(listen_sock, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    if (bind(listen_sock, (struct sockaddr *)&address, sizeof(address)) < 0) {				// 바인딩 입혀준다 소켓에
         std::cerr << "Bind failed" << std::endl;
         return 1;
     }
 
-    if (listen(listen_sock, SOMAXCONN) < 0) {
+    if (listen(listen_sock, SOMAXCONN) < 0) {				//wait 2번째 인자가 최대 입력가능 수
         std::cerr << "Listen failed" << std::endl;
         return 1;
     }
 
-	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);		//epoll_create(1024)          epoll_create1(EPOLL_CLOEXEC)  fork exec  자동으로 해지
 	if (epoll_fd == -1) {
 		std::cerr << "epoll_create1 failed" << std::endl;
 		return 1;
 	}
 
-	std::unordered_map<int, struct epoll_event> evs;
+	std::unordered_map<int, struct epoll_event> evs;		//Server_fd client_fd   bucket
 	struct epoll_event ev;
 	ev.events = EPOLLIN;
 	ev.data.fd = listen_sock;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {			//epoll_ctl 첫번째 인자 epoll 관리자 두번째 ADD DEL MOD 3번째인자가 해당하는 디스크립터 DEL는 4번째인자 무시
 		std::cerr << "epoll_ctl failed for listen socket" << std::endl;
 		return 1;
 	}
@@ -90,7 +90,7 @@ int main() {
 
 	signal(SIGINT, signal_handler);
 	while (running) {
-		int event_count = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, -1);
+		int event_count = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, -1);			//첫번째 인자의 디스크립터가 대기, 두번째 내용, -1 블로킹
 		if (event_count == -1) {
 			if (errno == EINTR) continue ;
 			std::cerr << "epoll_wait failed" << std::endl;
@@ -98,10 +98,10 @@ int main() {
 		}
 
 		for (int i = 0; i < event_count; ++i) {
-			if (events[i].data.fd == listen_sock) {
+			if (events[i].data.fd == listen_sock) {				// 신규 클라이언트 생성부분
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
-				int clientSock = accept(listen_sock, (struct sockaddr*)&client_addr, &client_len);
+				int clientSock = accept(listen_sock, (struct sockaddr*)&client_addr, &client_len); //연결 부분 
 				if (clientSock < 0) {
 					std::cerr << "Accept failed" << std::endl;
 					continue ;
