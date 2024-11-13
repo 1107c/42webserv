@@ -4,16 +4,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
+#include "ServerBlock.hpp"
 
-class Location
+class Location : public ServerBlock 
 {
     private :
         std::string _path;
-        std::string _root;
-        std::string _index;
-        std::vector<std::string> _methods;
-        bool _autoindex;
-        std::string _cgi;
+        std::vector<std::string> _cgi;
 
     public :
         Location();
@@ -21,12 +19,10 @@ class Location
         Location &operator&=(const Location &other);
         ~Location();
         bool setPath(const std::string& path);
-        bool setRoot(const std::string& root);
-        bool setIndex(const std::string& index);
-        bool setMethods(const std::vector<std::string>& methods);
-        bool setAutoindex(const std::string& autoindex);
         bool setCgi(const std::string& cgi);
-
+        
+        const std::string &getPath() const;
+        const std::vector<std::string> &getCgi() const;
 };
 
 #endif

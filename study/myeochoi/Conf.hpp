@@ -1,8 +1,7 @@
 #ifndef CONF_HPP
 #define CONF_HPP
 
-#include "ServerBlock.hpp"
-#include <map>
+#include "Location.hpp"
 
 enum ErrorType
 {
@@ -18,25 +17,24 @@ enum ConfigType {
     CLIENT_MAX_BODY_SIZE,
     ERROR_PAGE,
     LOCATION,
-};
-
-enum LocationType {
-    PATH,
     ROOT,
     INDEX,
     METHODS,
     AUTOINDEX,
+    PATH,
     CGI_PATH,
 };
+
 
 class Conf
 {
     private :
         std::ifstream _file;
         std::string _line;
-        std::vector<ServerBlock> _block;
+        std::vector<Location> _block;
+        Location* _back;
         std::map<std::string, ConfigType> _confMap;
-        std::map<std::string, LocationType> _locMap;
+        std::vector<std::vector<Location> > _server;
     public :
         class InputErrException;
         static char* checkInput(const int &args, char* &argv);
@@ -47,16 +45,23 @@ class Conf
         void    parseConf();
         void    makeLine();
         bool    checkBrace();
+        bool    switchCase(const std::string &key, const std::string &val);
+        bool    parseCommon(const std::string &key, const std::string &value, std::string::const_iterator &i);
+        bool    parseErrorpage(const std::string &value, std::string::const_iterator &i);
+        bool    parseLoc(std::string &key, std::string::const_iterator &start, std::string::const_iterator &i);
         bool    parseBlock(std::string::const_iterator &i);
         bool    parseLine(std::string::const_iterator &i);
-        bool    putBlock(const std::string &key, const std::string &value);
+        bool    putBlock(const std::string &key, const std::string &value, std::string::const_iterator &i);
         bool    parseLocation(std::string::const_iterator &i);
         bool    putLocation(const std::string &key, const std::string &value, Location& currentLocation, std::string::const_iterator &i);    
         bool    putMethods(const std::string &value, Location& currentLocation, std::string::const_iterator &i);    
         bool    allowConf(const std::string &conf);
         bool    isFirstLine(std::string::const_iterator &i);
         bool    isSpace(std::string::const_iterator &i);
-        unsigned int strtoul(const std::string &value);
+        void    updateLoc(Location &loc);
+        void    organizeServerBlocks();
+        void    printConfig();
+        const std::vector<std::vector<Location> >& getServerBlocks() const;
 
 
 };
