@@ -44,34 +44,25 @@
 // }
 int main(int args, char **argv)
 {
+    Epoll* epoll = NULL;
+
     try
     {
         Conf conf(Conf::checkInput(args, argv[1]));
         conf.parseConf();
-        Epoll epoll(conf);
-        epoll.run();
+        epoll = new Epoll(conf);
+        epoll->run();
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
-    }    
+        if (epoll)
+        {
+            epoll->closeFd();
+            delete epoll;
+        }
+    } 
 
-
-    // sockaddr_in addr;
-    // memset(&addr, 0, sizeof(addr));
-    // addr.sin_family = AF_INET;
-    // addr.sin_addr.s_addr = INADDR_ANY;
-    // addr.sin_port = htons(8080);
-
-    // if (bind(server_sock, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-    //     perror("bind");
-    //     return -1;
-    // }
-
-    // if (listen(server_sock, SOMAXCONN) == -1) {
-    //     perror("listen");
-    //     return -1;
-    // }
 
     // // 3. epoll에 서버 소켓 등록
     // epoll_event ev;
@@ -96,32 +87,32 @@ int main(int args, char **argv)
 
     //     // 발생한 이벤트 처리
     //     for (int i = 0; i < nfds; i++) {
-    //         if (events[i].data.fd == server_sock) {
-    //             // 새로운 클라이언트 연결 처리
-    //             while (true) {
-    //                 sockaddr_in client_addr;
-    //                 socklen_t client_len = sizeof(client_addr);
-    //                 int client_sock = accept(server_sock,
-    //                                         (struct sockaddr*)&client_addr,
-    //                                         &client_len);
+                // if (events[i].data.fd == server_sock) {
+                //     // 새로운 클라이언트 연결 처리
+                //     while (true) {
+                //         sockaddr_in client_addr;
+                //         socklen_t client_len = sizeof(client_addr);
+                //         int client_sock = accept(server_sock,
+                //                                 (struct sockaddr*)&client_addr,
+                //                                 &client_len);
 
-    //                 if (client_sock == -1) {
-    //                     if (errno == EAGAIN || errno == EWOULDBLOCK) {
-    //                         break;
-    //                     }
-    //                     perror("accept");
-    //                     break;
-    //                 }
-    //                 // 소켓을 epoll에 바로 등록
-    //                 struct epoll_event ev;
-    //                 ev.events = EPOLLIN;
-    //                 ev.data.fd = client_sock;
-    //                 if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_sock, &ev ) == -1) {
-    //                     perror("epoll_ctl");
-    //                     close(client_sock);
-    //                     break;
-    //                 }
-    //             }
+                //         if (client_sock == -1) {
+                //             if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                //                 break;
+                //             }
+                //             perror("accept");
+                //             break;
+                //         }
+                //         // 소켓을 epoll에 바로 등록
+                //         struct epoll_event ev;
+                //         ev.events = EPOLLIN;
+                //         ev.data.fd = client_sock;
+                //         if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_sock, &ev ) == -1) {
+                //             perror("epoll_ctl");
+                //             close(client_sock);
+                //             break;
+                //         }
+                //     }
     //         } else {
     //             // 클라이언트로부터 데이터 수신 처리 11111 4
     //             char buffer[6];
