@@ -101,26 +101,30 @@ int Epoll::isServerSocket(int &fd)
 {
     std::vector<int>::iterator i = std::find(_socket.begin(), _socket.end(), fd); 
     if (i == _socket.end())
-        return -1;
+        return 0;
     return *i;
 }
 
 void Epoll::handleNewConnection(int &fd)
 {
-    while (1)
-    {
+    // while (1)
+    // {
         sockaddr addr;
         socklen_t sockSize = sizeof(addr);
-        int clientSock = accept(fd,  (struct sockaddr*)&addr, &sockSize);
+        int clientSock = accept(fd, (struct sockaddr*)&addr, &sockSize);
         if (clientSock == -1)
+        {
+        //    if (errno == EAGAIN || errno == EWOULDBLOCK) 
+        //         break;
             throw std::runtime_error("client accept failed");
+        }
 
         epoll_event ev;
         ev.events = EPOLLIN;
         ev.data.fd = clientSock;
         if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, clientSock, &ev ) == -1)
             throw std::runtime_error("client register failed");
-    }
+    // }
 }
 
 void Epoll::handleRead(int &fd)
