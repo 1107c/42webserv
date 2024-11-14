@@ -1,11 +1,11 @@
 #include "Epoll.hpp"
 
 
-Epoll::Epoll(const Conf& config) : _config(config.getServerBlocks()), _epollfd(0), _socket()
+Epoll::Epoll(const Conf& config) : _config(config.getServerBlocks()), _epollfd(0), _socket(), _result(), _pendingResponses()
 {
 }
 
-Epoll::Epoll(const Epoll &other) : _config(other._config), _epollfd(other._epollfd), _socket(other._socket)
+Epoll::Epoll(const Epoll &other) : _config(other._config), _epollfd(other._epollfd), _socket(other._socket), _result(other._result), _pendingResponses(other._pendingResponses)
 {
 }
 
@@ -15,6 +15,8 @@ Epoll &Epoll::operator&=(const Epoll &other)
     {
         _epollfd = other._epollfd;
         _socket = other._socket;
+        _result = other._result;
+        _pendingResponses = other._pendingResponses;
     }
     return *this;
 }
@@ -123,46 +125,103 @@ void Epoll::handleNewConnection(int &fd)
         ev.events = EPOLLIN;
         ev.data.fd = clientSock;
         if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, clientSock, &ev ) == -1)
+        {
+            close(clientSock);
             throw std::runtime_error("client register failed");
+        } 
     // }
 }
 
 void Epoll::handleRead(int &fd)
 {
-    char buffer[8192];
+    char buffer[5];
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
 
     if (bytesRead > 0) {
-        std::string result = std::string(buffer, bytesRead);
-        if (result.find("favicon") == std::string::npos)
-            std::cout << "Received: " << std::string(buffer, bytesRead) << std::endl;
-        
-        /* Get 요청 처리 */
-        Request request(&_config);
-        request.parse(result);
-        request.debug();
+        _result[fd].append(buffer, bytesRead);
+        // if (result.find("favicon") == std::string::npos)
+        if (_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n")
+        {
+            std::cout << "Received complete request:\n" << _result[fd] << std::endl;
 
-        GetHandler getHandler;
-        getHandler.handleRequest(request);
-        
-        
-        //epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &evs[fd]);
-    } else if (bytesRead == 0) {
-        //evs.erase(fd);
-        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
-        close(fd);
+            Request request(&_config);
+            request.parse(_result[fd]);
+            request.debug();
+
+            GetHandler getHandler;
+            getHandler.handleRequest(request);
+            epoll_event ev;
+            ev.events = EPOLLOUT;
+            ev.data.fd = fd;
+            if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
+            {
+                handleClose(fd);
+                return;
+            }
+        }
+    }
+    // else if (bytesRead == 0) {
+    //     //evs.erase(fd);
+    //     epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+    //     close(fd);
+    // }
+}
+
+void Epoll::handleWrite(int &fd)
+{
+    if (_pendingResponses.find(fd) == _pendingResponses.end())
+    {
+            std::string response = "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: text/html\r\n"
+                                "Content-Length: 13\r\n"
+                                "\r\n"
+                                "Hello, World!";
+        _pendingResponses[fd] = response;
+        // if (_result[fd].find("GET /styles.css") != std::string::npos) {
+        //     _pendingResponses[fd] = create_css_response();
+        // }
+        // else if (_result[fd].find("GET /favi/background") != std::string::npos) {
+        //     _pendingResponses[fd] = create_image_response();
+        // } else if (_result[fd].find("GET /favicon.ico") != std::string::npos) {
+        //     _pendingResponses[fd] = create_favi_response();
+        // } else if (_result[fd].find("GET /favi/gyeongju") != std::string::npos) {
+        //     _pendingResponses[fd] = create_test_image_response();
+        // // }
+        // } else if (_result[fd].find("Cookie") == std::string::npos) {
+        //     _pendingResponses[fd] = create_cookie_http_response();
+        // }
+        // else {
+        //     _pendingResponses[fd] = create_http_response();
+        // }
+    }
+    // std::cout << _pendingResponses[fd].size() << std::endl;
+    size_t to_send = std::min(_pendingResponses[fd].size(), static_cast<size_t>(5));
+    int bytes_sent = send(fd, _pendingResponses[fd].c_str(), to_send, 0);
+    if (bytes_sent > 0)
+    {
+        _pendingResponses[fd] = _pendingResponses[fd].substr(bytes_sent);
+
+        if (_pendingResponses[fd].empty())
+        {
+            _pendingResponses.erase(fd);
+            _result.clear();
+            epoll_event ev;
+            ev.events = EPOLLIN;
+            ev.data.fd = fd;
+            epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev);
+        }
     }
 }
 
-// void Epoll::handleWrite(int &fd)
-// {
-
-// }
-
-// void Epoll::handleClose(int &fd)
-// {
-
-// }
+void Epoll::handleClose(int &fd)
+{
+    epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+    if (_result.find(fd) != _result.end())
+        _result.erase(fd);
+    close(fd);
+    std::cout << "Client disconnected: fd " << fd << std::endl;
+    // throw std::runtime_error("the client has been disconnected.");
+}
 
 void Epoll::registerSeverSocket()
 {
@@ -196,10 +255,10 @@ void Epoll::initClient()
             {
                 if (events[i].events & EPOLLIN)
                     handleRead(events[i].data.fd);
-                // if (events[i].events & EPOLLOUT)
-                //     handleWrite(events[i].data.fd);
-                // if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
-                //     handleClose(events[i].data.fd);
+                if (events[i].events & EPOLLOUT)
+                    handleWrite(events[i].data.fd);
+                if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
+                    handleClose(events[i].data.fd);
             }
         }
     }

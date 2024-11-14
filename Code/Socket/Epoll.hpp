@@ -12,7 +12,8 @@ class Epoll
         int _epollfd;
         std::vector<int> _socket;
         static const unsigned int MAX_EVENTS = 100; 
-        
+        std::map<int, std::string> _result;
+        std::map<int, std::string> _pendingResponses;
     public :
         Epoll(const Conf& config);
         Epoll(const Epoll &other);
