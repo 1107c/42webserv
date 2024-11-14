@@ -1,6 +1,5 @@
-
-
 #include "../Inc/WebServer.hpp"
+#include "../ConfigureHeader/Conf.hpp"
 
 class Request {
 private:
@@ -11,6 +10,7 @@ private:
     std::string _version;      // HTTP 버전 (HTTP/1.1 등)
     std::string _serverName; //서버 네임
     std::string _port;  //서버 포트
+    Conf *_conf; //conf파일 서버 블락
         
     // 헤더와 바디
     std::map<std::string, std::string> _headers;  // 요청 헤더들
@@ -27,6 +27,7 @@ private:
 public:
     // 생성자
     Request();
+    Request(Conf *conf);
     ~Request();
         
     // 파싱 메소드
