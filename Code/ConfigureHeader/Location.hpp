@@ -1,11 +1,9 @@
 #ifndef LOCATION_HPP
 #define LOCATION_HPP
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <map>
+
 #include "ServerBlock.hpp"
+#include "../Inc/WebServer.hpp"
 
 class Location : public ServerBlock 
 {

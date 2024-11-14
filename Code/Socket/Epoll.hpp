@@ -1,13 +1,7 @@
 #ifndef EPOLL_HPP
 #define EPOLL_HPP
 
-#include "Conf.hpp"
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <netdb.h> 
+#include "../ConfigureHeader/Conf.hpp"
 
 class Epoll 
 {

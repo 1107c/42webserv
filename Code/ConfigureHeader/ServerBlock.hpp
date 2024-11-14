@@ -1,10 +1,7 @@
 #ifndef SERVERBLOCK_HPP
 #define SERVERBLOCK_HPP
 
-#include <iostream>
-#include <vector>
-#include <map>
-
+#include "../Inc/WebServer.hpp"
 class ServerBlock
 {
     protected :

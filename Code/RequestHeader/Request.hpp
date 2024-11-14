@@ -1,9 +1,6 @@
-#include <iostream>
-#include <map>
-#include <vector>
-#include <unistd.h>
-#include <cstring>
-#include <sstream>
+
+
+#include "../Inc/WebServer.hpp"
 
 class Request {
 private:

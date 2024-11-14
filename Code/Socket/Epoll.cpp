@@ -1,5 +1,5 @@
 #include "Epoll.hpp"
-#include <algorithm>
+
 
 Epoll::Epoll(const Conf& config) : _config(config.getServerBlocks()), _epollfd(0), _socket()
 {

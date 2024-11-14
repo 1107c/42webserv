@@ -2,6 +2,7 @@
 #define CONF_HPP
 
 #include "Location.hpp"
+#include "../Inc/WebServer.hpp"
 
 enum ErrorType
 {

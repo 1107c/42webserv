@@ -1,4 +1,4 @@
-#include "Location.hpp"
+#include "../ConfigureHeader/Location.hpp"
 
 Location::Location(): ServerBlock(), _path(""), _cgi(), _redirect("")
 {

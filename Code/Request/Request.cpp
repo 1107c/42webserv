@@ -1,4 +1,4 @@
-#include "Request.hpp"
+#include "../RequestHeader/Request.hpp"
 
 //생성자
 Request::Request() : _isParsed(false)

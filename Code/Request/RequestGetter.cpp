@@ -1,4 +1,4 @@
-#include "Request.hpp"
+#include "../RequestHeader/Request.hpp"
 
 const std::string& Request::getMethod() const { return this->_method; }
 const std::string& Request::getPath() const { return this->_path; }

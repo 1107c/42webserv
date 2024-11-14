@@ -1,9 +1,4 @@
-#include "Conf.hpp"
-#include <cstring>
-#include <stack>
-#include <cctype>
-#include <sstream>
-
+#include "../ConfigureHeader/Conf.hpp"
 
 class Conf::InputErrException : public std::exception
 {

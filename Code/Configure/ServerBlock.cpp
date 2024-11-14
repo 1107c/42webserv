@@ -1,7 +1,5 @@
-#include "ServerBlock.hpp"
-#include <climits>
-#include <algorithm>
-#include <unistd.h> 
+#include "../ConfigureHeader/ServerBlock.hpp"
+
 ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(),
  _root(""), _methods(), _autoidx(false), _index(), _error()
 {
