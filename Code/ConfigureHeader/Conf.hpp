@@ -27,7 +27,6 @@ enum ConfigType {
     REDIRECT,
 };
 
-
 class Conf
 {
     private :

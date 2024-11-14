@@ -138,7 +138,8 @@ void Epoll::handleRead(int &fd)
             std::cout << "Received: " << std::string(buffer, bytesRead) << std::endl;
         
         /* Get 요청 처리 */
-        Request request;
+        
+        Request request(&_config);
         request.parse(result);
         request.debug();
         
