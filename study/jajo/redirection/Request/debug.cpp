@@ -7,6 +7,12 @@ void Request::debug() {
     std::cout << "\n\n\n=== Path ===\n";
     std::cout << this->getPath();
 
+    std::cout << "\n\n\n=== Server Name ===\n";
+    std::cout << this->getServerName();
+
+    std::cout << "\n\n\n=== Port ===\n";
+    std::cout << this->getServerPort();
+
     std::cout << "\n\n\n=== Query ===\n";
     std::cout << this->getQuery();
 

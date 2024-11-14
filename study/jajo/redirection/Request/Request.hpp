@@ -12,6 +12,8 @@ private:
     std::string _path;      // 요청 경로 (/index.html 등)
     std::string _query;   // 쿼리 스트링
     std::string _version;      // HTTP 버전 (HTTP/1.1 등)
+    std::string _serverName; //서버 네임
+    std::string _port;  //서버 포트
         
     // 헤더와 바디
     std::map<std::string, std::string> _headers;  // 요청 헤더들
@@ -43,6 +45,8 @@ public:
     const std::string& getQuery() const;
     const std::string& getVersion() const;
     const std::string& getBody() const;
+    const std::string& getServerName() const;
+    const std::string& getServerPort() const;
     const std::map<std::string, std::string>& getHeaders() const;
     std::string getHeader(const std::string& key) const;
         

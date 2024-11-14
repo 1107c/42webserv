@@ -89,6 +89,33 @@ bool Request::parseHeaders(const std::string& headerSection) {
             return false;
         }
     }
+
+    //Server name, port 멤버 변수로 넣기
+    if (this->_headers.count("Host")) {
+        try {
+            std::string hostString;
+            std::istringstream iss(this->_headers.at("Host"));
+            if (!(iss >> hostString)) {
+                setError(400);
+                return (false);
+            }
+            //문자열 쪼개기
+            size_t colonPos = hostString.find(":");
+            if (colonPos == std::string::npos) {
+                setError(400);
+                return false;
+            }
+            this->_serverName = hostString.substr(0, colonPos);
+            this->_port = hostString.substr(colonPos + 1);
+        } catch (...) {
+            setError(400);
+            return false;
+        }
+    } else {
+        setError(400);
+        return false;
+    }
+
     return true;
 }
 
