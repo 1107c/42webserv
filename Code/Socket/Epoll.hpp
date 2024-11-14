@@ -3,6 +3,7 @@
 
 #include "../ConfigureHeader/Conf.hpp"
 #include "../RequestHeader/Request.hpp"
+#include "../MethodHeader/GetHandler.hpp"
 
 class Epoll 
 {

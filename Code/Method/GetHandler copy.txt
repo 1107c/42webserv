@@ -1,0 +1,162 @@
+
+
+// 상수 초기화
+const std::map<int, std::string> GetHandler::status_messages_ = {
+    {200, "OK"},
+    {400, "Bad Request"},
+    {403, "Forbidden"},
+    {404, "Not Found"},
+    {500, "Internal Server Error"}
+};
+
+const std::map<std::string, std::string> GetHandler::mime_types_ = {
+    {".html", "text/html"},
+    {".htm", "text/html"},
+    {".css", "text/css"},
+    {".js", "application/javascript"},
+    {".jpg", "image/jpeg"},
+    {".jpeg", "image/jpeg"},
+    {".png", "image/png"},
+    {".gif", "image/gif"},
+    {".txt", "text/plain"}
+};
+
+GetHandler::GetHandler() {}
+
+std::string GetHandler::handle_request(const std::string& request) {
+    std::istringstream request_stream(request);
+    std::string request_line;
+    std::stringstream response;
+    
+    // 요청 라인 파싱
+    if (!std::getline(request_stream, request_line)) {
+        send_error_response(400, response);
+        return response.str();
+    }
+    
+    try {
+        parse_request_line(request_line);
+        parse_headers(request_stream);
+        
+        // URI 경로 검증
+        if (!is_valid_path(request_uri_)) {
+            send_error_response(403, response);
+            return response.str();
+        }
+        
+        // 파일 요청 처리
+        std::string response_body;
+        HttpStatus status = handle_file_request(request_uri_, response_body);
+        
+        // 응답 생성
+        response << "HTTP/1.1 " << status.code << " " << status.message << "\r\n";
+        response << "Content-Type: " << get_mime_type(request_uri_) << "\r\n";
+        response << "Content-Length: " << response_body.length() << "\r\n";
+        response << "\r\n";
+        response << response_body;
+        
+    } catch (const std::exception& e) {
+        send_error_response(500, response);
+    }
+    
+    return response.str();
+}
+
+void GetHandler::parse_request_line(const std::string& request_line) {
+    std::istringstream line(request_line);
+    std::string method, uri, version;
+    
+    line >> method >> uri >> version;
+    
+    if (method != "GET") {
+        throw std::runtime_error("Method not allowed");
+    }
+    
+    // URI와 쿼리 파라미터 파싱
+    size_t query_pos = uri.find('?');
+    if (query_pos != std::string::npos) {
+        request_uri_ = uri.substr(0, query_pos);
+        parse_query_string(uri.substr(query_pos + 1));
+    } else {
+        request_uri_ = uri;
+    }
+}
+
+void GetHandler::parse_headers(std::istringstream& request_stream) {
+    std::string header_line;
+    while (std::getline(request_stream, header_line) && header_line != "\r") {
+        size_t delimiter_pos = header_line.find(':');
+        if (delimiter_pos != std::string::npos) {
+            std::string key = header_line.substr(0, delimiter_pos);
+            std::string value = header_line.substr(delimiter_pos + 1);
+            // 앞뒤 공백 제거
+            value.erase(0, value.find_first_not_of(" "));
+            value.erase(value.find_last_not_of("\r") + 1);
+            headers_[key] = value;
+        }
+    }
+}
+
+void GetHandler::parse_query_string(const std::string& query) {
+    std::istringstream query_stream(query);
+    std::string param;
+    
+    while (std::getline(query_stream, param, '&')) {
+        size_t eq_pos = param.find('=');
+        if (eq_pos != std::string::npos) {
+            std::string key = param.substr(0, eq_pos);
+            std::string value = param.substr(eq_pos + 1);
+            query_params_[key] = value;
+        }
+    }
+}
+
+std::string GetHandler::get_mime_type(const std::string& file_path) {
+    size_t dot_pos = file_path.find_last_of('.');
+    if (dot_pos != std::string::npos) {
+        std::string ext = file_path.substr(dot_pos);
+        auto it = mime_types_.find(ext);
+        if (it != mime_types_.end()) {
+            return it->second;
+        }
+    }
+    return "application/octet-stream";
+}
+
+bool GetHandler::is_valid_path(const std::string& path) {
+    // 디렉토리 트래버설 방지
+    if (path.find("..") != std::string::npos) {
+        return false;
+    }
+    // 추가적인 경로 검증 로직
+    return true;
+}
+
+GetHandler::HttpStatus GetHandler::handle_file_request(
+    const std::string& file_path, 
+    std::string& response_body
+) {
+    std::ifstream file(file_path.substr(1), std::ios::binary);  // 첫 '/' 제거
+    if (!file) {
+        return {404, status_messages_.at(404)};
+    }
+    
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    response_body = buffer.str();
+    
+    return {200, status_messages_.at(200)};
+}
+
+void GetHandler::send_error_response(int status_code, std::stringstream& response) {
+    std::string error_body = "<html><body><h1>" + 
+                            std::to_string(status_code) + " " +
+                            status_messages_.at(status_code) + 
+                            "</h1></body></html>";
+    
+    response << "HTTP/1.1 " << status_code << " " << status_messages_.at(status_code) << "\r\n";
+    response << "Content-Type: text/html\r\n";
+    response << "Content-Length: " << error_body.length() << "\r\n";
+    response << "\r\n";
+    response << error_body;
+}

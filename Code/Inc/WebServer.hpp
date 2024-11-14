@@ -17,5 +17,6 @@
 #include <string.h>
 #include <netdb.h> 
 #include <algorithm>
+#include <string>
 
 #endif
