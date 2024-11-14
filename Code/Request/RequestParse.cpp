@@ -32,7 +32,9 @@ bool Request::parse(const std::string& rawRequest) {
         this->_isParsed = true;
 
         //안에서 iscomplete flag 세워야함
-        validateRequest();
+        if (validateRequest() == false) {
+            //response 메시지로 바로 던지기
+        }
     } catch (const std::exception& e) {
         setError(400);
         return false;

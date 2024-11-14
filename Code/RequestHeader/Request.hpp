@@ -1,5 +1,7 @@
 #include "../Inc/WebServer.hpp"
 #include "../ConfigureHeader/Conf.hpp"
+#include "../ConfigureHeader/Location.hpp"
+
 
 class Request {
 private:
@@ -10,7 +12,7 @@ private:
     std::string _version;      // HTTP 버전 (HTTP/1.1 등)
     std::string _serverName; //서버 네임
     std::string _port;  //서버 포트
-    Conf *_conf; //conf파일 서버 블락
+    const std::vector<std::vector<Location> > *_conf; //conf파일 서버 블락
         
     // 헤더와 바디
     std::map<std::string, std::string> _headers;  // 요청 헤더들
@@ -27,7 +29,7 @@ private:
 public:
     // 생성자
     Request();
-    Request(Conf *conf);
+    Request(const std::vector<std::vector<Location> > *conf);
     ~Request();
         
     // 파싱 메소드
@@ -66,6 +68,6 @@ private:
     void parseQueryString(const std::string& url);
     void setError(int code);  // 에러 설정
     void normalizedPath();  // 경로 정규화 (../와 ./ 처리)
-    bool validateRequest() const;  // 요청의 유효성 검사
+    bool validateRequest();  // 요청의 유효성 검사
 
 };
