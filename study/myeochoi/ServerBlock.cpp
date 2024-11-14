@@ -83,7 +83,7 @@ bool ServerBlock::setPort(unsigned int port)
 }
 bool ServerBlock::setServerName(const std::string& server) 
 {
-    if (server.empty() || std::find(_server.begin(), _server.end(), server) != _server.end())
+    if (std::find(_server.begin(), _server.end(), server) != _server.end())
         return false;
     _server.push_back(server);
     return true;
@@ -121,11 +121,7 @@ bool ServerBlock::validatePath(const std::string& path)
 
 
 bool ServerBlock::setErrorPage(const std::string& num, const std::string& page)
-{
-
-    if (num.empty() || page.empty())
-        return false;
-    
+{    
     unsigned int numInt = strtoul(num);
     
     if (numInt < 400 || numInt > 507 || !validatePath(page))
@@ -136,7 +132,7 @@ bool ServerBlock::setErrorPage(const std::string& num, const std::string& page)
 
 bool ServerBlock::setRoot(const std::string& root)
 {
-    if (root.empty() || !validatePath(root))
+    if (    !validatePath(root))
         return false;
     _root = root;
     return true;

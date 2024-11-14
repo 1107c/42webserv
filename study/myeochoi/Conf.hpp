@@ -23,6 +23,7 @@ enum ConfigType {
     AUTOINDEX,
     PATH,
     CGI_PATH,
+    REDIRECT,
 };
 
 

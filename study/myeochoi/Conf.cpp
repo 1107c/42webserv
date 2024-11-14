@@ -54,6 +54,7 @@ Conf::Conf(const std::string &file) : _file(file.c_str()), _line("")
     _confMap["autoindex"] = AUTOINDEX;
     _confMap["path"] = PATH;
     _confMap["cgi_path"] = CGI_PATH;
+    _confMap["redirect"] = REDIRECT;
 }
 
 Conf::Conf(const Conf &other) : _line(other._line)
@@ -177,6 +178,8 @@ bool    Conf::switchCase(const std::string &key, const std::string &val)
             return _back->setAutoindex(val);
         case CGI_PATH:
             return _back->setCgi(val);
+        case REDIRECT:
+            return _back->setRedirect(val);
         default :
             return false;
     }
@@ -291,8 +294,6 @@ bool    Conf::parseBlock(std::string::const_iterator &i)
     return true;
 }
 
-
-
 void Conf::parseConf()
 {
     makeLine();
@@ -317,10 +318,14 @@ void Conf::updateLoc(Location &loc)
         
     Location &firstLoc = _server.back().front();
     
+    if (_server.back().front().getHost().empty())
+        throw Conf::InputErrException(INVALID_FORMAT);
     if (loc.getHost().empty())
         loc.setHost(firstLoc.getHost()); 
     if (loc.getPort().empty())
     {
+        if (_server.back().front().getPort().empty())
+            throw Conf::InputErrException(INVALID_FORMAT);
         std::vector<unsigned int> tmp = firstLoc.getPort();
         for (unsigned int i = 0; i != tmp.size(); ++i)
             loc.setPort(tmp[i]);
@@ -467,6 +472,10 @@ void Conf::printConfig() {
                 std::cout << cgiPaths[j];
                 if (j < cgiPaths.size() - 1) std::cout << ", ";
             }
+            std::cout << "\n";
+
+            std::cout << "  Redirect: " << loc.getRedirect() << "\n";
+
             std::cout << "\n";
         }
     }

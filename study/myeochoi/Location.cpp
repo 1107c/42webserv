@@ -1,10 +1,10 @@
 #include "Location.hpp"
 
-Location::Location(): ServerBlock(), _path(""), _cgi()
+Location::Location(): ServerBlock(), _path(""), _cgi(), _redirect("")
 {
 }
 
-Location::Location(const Location &other) : ServerBlock(other), _path(other._path), _cgi(other._cgi)
+Location::Location(const Location &other) : ServerBlock(other), _path(other._path), _cgi(other._cgi), _redirect(other._redirect)
 {
     
 }
@@ -16,6 +16,7 @@ Location& Location::operator&=(const Location &other)
         ServerBlock::operator&=(other);
         _path = other._path;
         _cgi = other._cgi;
+        _redirect = other._redirect;
     }
     return *this;
 }
@@ -42,6 +43,14 @@ bool Location::setCgi(const std::string& cgi)
     return true;
 }
 
+bool Location::setRedirect(const std::string& redirect)
+{
+    if (!validatePath(redirect))
+        return false;
+    _redirect = redirect;
+    return true;
+}
+
 const std::string &Location::getPath() const
 {
     return _path;
@@ -49,4 +58,9 @@ const std::string &Location::getPath() const
 const std::vector<std::string> &Location::getCgi() const
 {
     return _cgi;
+}
+
+const std::string &Location::getRedirect() const
+{
+    return _redirect;
 }

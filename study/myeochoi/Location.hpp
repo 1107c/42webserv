@@ -12,6 +12,7 @@ class Location : public ServerBlock
     private :
         std::string _path;
         std::vector<std::string> _cgi;
+        std::string _redirect;
 
     public :
         Location();
@@ -20,9 +21,11 @@ class Location : public ServerBlock
         ~Location();
         bool setPath(const std::string& path);
         bool setCgi(const std::string& cgi);
+        bool setRedirect(const std::string& cgi);
         
         const std::string &getPath() const;
         const std::vector<std::string> &getCgi() const;
+        const std::string &getRedirect() const;
 };
 
 #endif
