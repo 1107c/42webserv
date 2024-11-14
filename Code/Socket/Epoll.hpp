@@ -2,6 +2,7 @@
 #define EPOLL_HPP
 
 #include "../ConfigureHeader/Conf.hpp"
+#include "../RequestHeader/Request.hpp"
 
 class Epoll 
 {

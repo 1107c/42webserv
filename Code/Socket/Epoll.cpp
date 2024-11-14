@@ -109,9 +109,9 @@ void Epoll::handleNewConnection(int &fd)
 {
     while (1)
     {
-        // sockaddr addr;
-        // socklen_t sockSize = sizeof(addr);
-        int clientSock = accept(fd, NULL, NULL);
+        sockaddr addr;
+        socklen_t sockSize = sizeof(addr);
+        int clientSock = accept(fd,  (struct sockaddr*)&addr, &sockSize);
         if (clientSock == -1)
             throw std::runtime_error("client accept failed");
 
@@ -123,10 +123,29 @@ void Epoll::handleNewConnection(int &fd)
     }
 }
 
-// void Epoll::handleRead(int &fd)
-// {
+void Epoll::handleRead(int &fd)
+{
+    char buffer[8192];
+    int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
 
-// }
+    if (bytesRead > 0) {
+        std::string result = std::string(buffer, bytesRead);
+        if (result.find("favicon") == std::string::npos)
+            std::cout << "Received: " << std::string(buffer, bytesRead) << std::endl;
+        
+        /* Get 요청 처리 */
+        Request request;
+        request.parse(result);
+        request.debug();
+        
+        
+        //epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &evs[fd]);
+    } else if (bytesRead == 0) {
+        //evs.erase(fd);
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+    }
+}
 
 // void Epoll::handleWrite(int &fd)
 // {
@@ -168,8 +187,8 @@ void Epoll::initClient()
                 handleNewConnection(serverSocket);
             else
             {
-                // if (events[i].events & EPOLLIN)
-                //     handleRead(events[i].data.fd);
+                if (events[i].events & EPOLLIN)
+                    handleRead(events[i].data.fd);
                 // if (events[i].events & EPOLLOUT)
                 //     handleWrite(events[i].data.fd);
                 // if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))

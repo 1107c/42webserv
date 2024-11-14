@@ -1,5 +1,5 @@
 #include "Epoll.hpp"
-#include "../RequestHeader/Request.hpp"
+//#include "../RequestHeader/Request.hpp"
 
 int main(int args, char **argv)
 {
@@ -9,8 +9,8 @@ int main(int args, char **argv)
     {
         Conf conf(Conf::checkInput(args, argv[1]));
         conf.parseConf();
-        Request req;
-        req.debug();
+        //Request req;
+        //req.debug();
         epoll = new Epoll(conf);
         epoll->run();
     }
