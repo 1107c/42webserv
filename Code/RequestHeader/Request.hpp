@@ -17,6 +17,7 @@ class Request {
         std::string _port;  //서버 포트
         const std::vector<std::vector<Location> > *_conf; //conf파일 서버 블락
         int _serverBlockIdx;
+        std::string _normalizedPath;
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;  // 요청 헤더들
@@ -51,6 +52,7 @@ class Request {
         const std::string& getBody() const;
         const std::string& getServerName() const;
         const std::string& getServerPort() const;
+        const std::string& getNormalizedPath() const;
         const std::map<std::string, std::string>& getHeaders() const;
         std::string getHeader(const std::string& key) const;
         int getServerBlockIdx() const;

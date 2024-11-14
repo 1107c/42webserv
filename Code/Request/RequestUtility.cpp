@@ -9,10 +9,14 @@ void Request::setError(int code) { // 에러 설정
 
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
 //구현 필요
+    _normalizedPath += "/home/jajo/redirection" + this->_path;
+    _normalizedPath.erase(_normalizedPath.size() - 1);
+
 }
 
 bool Request::validateRequest() { // 요청의 유효성 검사
     //1. Request메시지 확인 후(서버 네임, 포트 번호) 알맞은 서버 블록 가져오기
+    std::cout << "Validation\n";
     Location location;
     int findIdx = -1;
     unsigned int serverPort;
@@ -32,6 +36,7 @@ bool Request::validateRequest() { // 요청의 유효성 검사
                     if (serverPort == ((*_conf)[totalIdx][0].getPort()[portIdx])) {
                         findIdx = totalIdx;
                         this->_serverBlockIdx = findIdx;
+                        std::cout << this->_serverBlockIdx << std::endl;
                         break ;
                     }
                 }
@@ -66,6 +71,7 @@ bool Request::validateRequest() { // 요청의 유효성 검사
         return false;
     }
 
+std::cout << "validation end\n";
     return true;
 }
 

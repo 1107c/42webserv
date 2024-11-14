@@ -13,7 +13,7 @@ BAR_FILLED = 0
 BAR_EMPTY = 60
 
 C++ := c++
-CFLAGS := -Wall -Wextra -Werror -std=c++98
+CFLAGS := -Wall -Wextra -Werror -std=c++98 -g
 RM := rm -f
 
 NAME := webserv
@@ -24,8 +24,9 @@ SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
 METHOD = ./Method/GetCheckRedirection.cpp ./Method/GetHandler.cpp
 
+RESPONSE = ./Response/Response.cpp ./Response/ResponseGetter.cpp ./Response/ResponseMessage.cpp ./Response/ResponseMessageUtility.cpp
 INC_DIR := .
-SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD)
+SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD) $(RESPONSE)
 OBJS := $(SRCS:.cpp=.o)
 
 .PHONY : all start clean fclean re
