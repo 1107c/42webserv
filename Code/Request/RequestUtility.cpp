@@ -31,6 +31,7 @@ bool Request::validateRequest() { // 요청의 유효성 검사
                 for (size_t portIdx = 0; portIdx < (*_conf)[totalIdx][0].getPort().size(); portIdx++) {
                     if (serverPort == ((*_conf)[totalIdx][0].getPort()[portIdx])) {
                         findIdx = totalIdx;
+                        this->_serverBlockIdx = findIdx;
                         break ;
                     }
                 }

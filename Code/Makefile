@@ -22,8 +22,10 @@ CONFIGURE = ./Configure/Conf.cpp ./Configure/Location.cpp ./Configure/ServerBloc
 REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp
 SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
+METHOD = ./Method/GetCheckRedirection.cpp ./Method/GetHandler.cpp
+
 INC_DIR := .
-SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET)
+SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD)
 OBJS := $(SRCS:.cpp=.o)
 
 .PHONY : all start clean fclean re

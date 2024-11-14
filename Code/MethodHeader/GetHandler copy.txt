@@ -1,0 +1,122 @@
+#include "../Inc/WebServer.hpp"
+#include "../RequestHeader/Request.cpp"
+
+class HttpGetHandler {
+    private:
+        // 리다이렉션 관련 상수
+        static const int MAX_REDIRECTS = 5;  // 최대 리다이렉션 횟수
+       
+        struct RedirectConfig {
+            std::string from_path;
+            std::string to_path;
+            int status_code;  // 301(영구) 또는 302(임시)
+        };
+        
+
+    public:
+        HttpGetHandler();
+        
+        // GET 요청 처리 메인 함수
+        std::string handle_request(Request &requestMessage);
+
+        //리다이렉션 요청 확인
+        bool checkRedirection(Request& request);
+
+
+
+
+
+
+
+
+        // 요청 파싱 메서드들
+        void parse_request_line(const std::string& request_line);
+        void parse_headers(std::istringstream& request_stream);
+        
+        // Getter 메서드들
+        const std::string& get_request_uri() const { return request_uri_; }
+        const std::map<std::string, std::string>& get_headers() const { return headers_; }
+        const std::map<std::string, std::string>& get_query_params() const { return query_params_; }
+
+        // 리다이렉션 규칙 추가 메서드
+        void add_redirect_rule(const std::string& from_path, 
+                            const std::string& to_path, 
+                            bool permanent = false) {
+            redirect_rules_.push_back({
+                from_path, 
+                to_path, 
+                permanent ? 301 : 302
+            });
+        }
+
+
+        // 리다이렉션 체크 메서드
+        bool check_redirect(const std::string& path, RedirectConfig& redirect_info) {
+            for (const auto& rule : redirect_rules_) {
+                if (rule.from_path == path) {
+                    redirect_info = rule;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 리다이렉션 응답 생성 메서드
+        std::string create_redirect_response(const RedirectConfig& redirect_info) {
+            std::stringstream response;
+            std::string status_text = (redirect_info.status_code == 301) ? 
+                                    "Moved Permanently" : "Found";
+
+            response << "HTTP/1.1 " << redirect_info.status_code << " " << status_text << "\r\n";
+            response << "Location: " << redirect_info.to_path << "\r\n";
+            response << "Content-Length: 0\r\n";
+            response << "\r\n";
+
+            return response.str();
+        }
+
+        // 수정된 handle_request 메서드
+        std::string handle_request(const std::string& request) {
+            std::istringstream request_stream(request);
+            std::string request_line;
+            std::stringstream response;
+            
+            if (!std::getline(request_stream, request_line)) {
+                send_error_response(400, response);
+                return response.str();
+            }
+            
+            try {
+                parse_request_line(request_line);
+                parse_headers(request_stream);
+                
+                // 리다이렉션 체크
+                RedirectConfig redirect_info;
+                if (check_redirect(request_uri_, redirect_info)) {
+                    return create_redirect_response(redirect_info);
+                }
+                
+                // URI 경로 검증
+                if (!is_valid_path(request_uri_)) {
+                    send_error_response(403, response);
+                    return response.str();
+                }
+                
+                // 기존의 파일 요청 처리
+                std::string response_body;
+                HttpStatus status = handle_file_request(request_uri_, response_body);
+                
+                response << "HTTP/1.1 " << status.code << " " << status.message << "\r\n";
+                response << "Content-Type: " << get_mime_type(request_uri_) << "\r\n";
+                response << "Content-Length: " << response_body.length() << "\r\n";
+                response << "\r\n";
+                response << response_body;
+                
+            } catch (const std::exception& e) {
+                send_error_response(500, response);
+            }
+            
+            return response.str();
+        }
+
+};
