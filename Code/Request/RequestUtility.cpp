@@ -7,11 +7,61 @@ void Request::setError(int code) { // 에러 설정
     this->_errorCode = code;
 }
 
-void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
-//구현 필요
-    _normalizedPath += "/home/jajo/redirection" + this->_path;
-    _normalizedPath.erase(_normalizedPath.size() - 1);
+void Request::redirectionPath() {
+    std::string path = this->getPath();
+    std::string str = "redirection";
+    size_t pos = path.find(str);
+    std::string temp = path.substr(pos + str.size() + 1);
+    const std::vector<std::vector<Location> >& confRef = *this->_conf;
+    int serverBlockidx = this->getServerBlockIdx();
+    //int serverBlockidx = 0;
+    this->_mappingUrl = confRef[serverBlockidx][0].getRoot() + temp;
+}
 
+bool Request::findDot() {
+    std::string temp;
+
+    size_t dpos = this->getPath().rfind(".");
+    size_t spos = this->getPath().rfind("/");
+    if (dpos != std::string::npos && dpos > spos) {
+        return true;
+    }
+    return false;
+}
+
+void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
+    std::string path = this->getPath();
+    if (path.find("redirection") != std::string::npos) {
+        redirectionPath();
+        return ;
+    }
+
+    std::string temp;
+    size_t pos = path.rfind("/");
+    if (pos != std::string::npos) {
+        if (findDot()) {
+            temp = path.substr(pos + 1);
+            path = path.substr(0, pos);
+        }
+    } else return ;
+
+    int serverBlockIdx = this->getServerBlockIdx();
+    //int serverBlockIdx = 0;
+    const std::vector<std::vector<Location> >& confRef = *this->_conf;
+    size_t size = std::count(path.begin(), path.end(), '/');
+    for (size_t i = 0; i < size; ++i) {
+        for (size_t j = 1; j < confRef[serverBlockIdx].size(); ++j) {
+            if (confRef[serverBlockIdx][j].getPath() == path) {
+                this->_mappingUrl = confRef[serverBlockIdx][j].getRoot() + temp;
+                break ;
+            }
+        }
+        if (!this->_mappingUrl.empty())
+            break ;
+        pos = path.rfind("/");
+        temp = path.substr(pos) + temp;
+        path = path.substr(0, pos);
+    }
 }
 
 bool Request::validateRequest() { // 요청의 유효성 검사

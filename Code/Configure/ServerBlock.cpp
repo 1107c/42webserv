@@ -137,8 +137,8 @@ bool ServerBlock::setRoot(const std::string& root)
 }
 bool ServerBlock::setIndex(const std::string& index)
 {
-    if (!_root.empty() && _root[_root.size() - 1] != '/')
-        _root += '/';
+    // if (!_root.empty() && _root[_root.size() - 1] != '/')
+    //     _root += '/';
     // if (access((_root + index).c_str(), X_OK) != 0)
     //     return false;
     _index.push_back(index);

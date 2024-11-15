@@ -22,7 +22,7 @@ CONFIGURE = ./Configure/Conf.cpp ./Configure/Location.cpp ./Configure/ServerBloc
 REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp
 SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
-METHOD = ./Method/GetCheckRedirection.cpp ./Method/GetHandler.cpp
+METHOD = ./Method/GetCheckRedirection.cpp ./Method/GetHandler.cpp ./Method/GetHandlerGetter.cpp
 
 RESPONSE = ./Response/Response.cpp ./Response/ResponseGetter.cpp ./Response/ResponseMessage.cpp ./Response/ResponseMessageUtility.cpp
 INC_DIR := .
