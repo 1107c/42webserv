@@ -167,16 +167,95 @@ void Epoll::handleRead(int &fd)
     // }
 }
 
+std::string createHttpResponse(const std::string& filePath) {
+    // HTML 파일 읽기
+    std::ifstream file(filePath.c_str());
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + filePath);
+    }
+
+    // 파일 내용 읽기
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+    file.close();
+
+    // HTTP 응답 생성   
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Content-Length: " << content.length() << "\r\n"
+             << "\r\n"
+             << content;
+
+    return response.str();
+}
+
+std::string executeCgi(const char *(&args)[3])
+{
+    int fd[2];
+    pid_t pid;
+    
+    if (pipe(fd) == -1)
+        throw std::runtime_error("Failed to pipe");
+    pid = fork();
+    if (pid == -1)
+    {
+        close (fd[0]);
+        close (fd[1]);
+        throw std::runtime_error("Failed to fork");
+    }
+    if (pid == 0)
+    {
+        close (fd[0]);
+        if (dup2(fd[1], 1) == -1)
+        {
+            close (fd[1]);
+            throw std::runtime_error("Failed to fork");
+        }
+        close (fd[1]);
+        if (execve(args[0], (char *const *)args, NULL) == -1)
+            throw std::runtime_error("Failed to exec");
+    }
+    close(fd[1]);
+    char buffer[4096];
+    std::string res;
+    ssize_t bytes;
+    while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
+        res.append(buffer, bytes);
+    close(fd[0]);
+    std::cout << res << std::endl;
+    int status;
+    waitpid(pid, &status, 0);
+    std::stringstream full_response;
+    full_response << "HTTP/1.1 200 OK\r\n";
+    if (!strcmp("/usr/bin/python3", args[0]))
+        full_response << "Content-Type: text/html\r\n";
+    else
+        full_response << "Content-Type: image/jpeg\r\n";
+    full_response << "Content-Length: " << res.length() << "\r\n\r\n";
+    full_response << res;
+    std::cout << full_response.str() << std::endl;
+    return full_response.str();
+}
+
 void Epoll::handleWrite(int &fd)
 {
     if (_pendingResponses.find(fd) == _pendingResponses.end())
     {
-            std::string response = "HTTP/1.1 200 OK\r\n"
-                                "Content-Type: text/html\r\n"
-                                "Content-Length: 13\r\n"
-                                "\r\n"
-                                "Hello, World!";
-        _pendingResponses[fd] = response;
+        const char *py[] = {
+            "/usr/bin/python3",
+            "python.py",
+            NULL
+        };
+        _pendingResponses[fd] = executeCgi(py);
+
+        // const char *cpp[] = {
+        //     "a.out",
+        //     NULL,
+        //     NULL
+        // };
+        // _pendingResponses[fd] = executeCgi(cpp);
         // if (_result[fd].find("GET /styles.css") != std::string::npos) {
         //     _pendingResponses[fd] = create_css_response();
         // }
