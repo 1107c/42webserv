@@ -193,50 +193,95 @@ std::string createHttpResponse(const std::string& filePath) {
 
 std::string executeCgi(const char *(&args)[3])
 {
-    int fd[2];
-    pid_t pid;
-    
-    if (pipe(fd) == -1)
-        throw std::runtime_error("Failed to pipe");
-    pid = fork();
-    if (pid == -1)
-    {
-        close (fd[0]);
-        close (fd[1]);
-        throw std::runtime_error("Failed to fork");
-    }
-    if (pid == 0)
-    {
-        close (fd[0]);
-        if (dup2(fd[1], 1) == -1)
-        {
-            close (fd[1]);
-            throw std::runtime_error("Failed to fork");
-        }
-        close (fd[1]);
-        if (execve(args[0], (char *const *)args, NULL) == -1)
-            throw std::runtime_error("Failed to exec");
-    }
-    close(fd[1]);
-    char buffer[4096];
-    std::string res;
-    ssize_t bytes;
-    while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
-        res.append(buffer, bytes);
-    close(fd[0]);
-    std::cout << res << std::endl;
-    int status;
-    waitpid(pid, &status, 0);
-    std::stringstream full_response;
-    full_response << "HTTP/1.1 200 OK\r\n";
-    if (!strcmp("/usr/bin/python3", args[0]))
-        full_response << "Content-Type: text/html\r\n";
-    else
-        full_response << "Content-Type: image/jpeg\r\n";
-    full_response << "Content-Length: " << res.length() << "\r\n\r\n";
-    full_response << res;
-    std::cout << full_response.str() << std::endl;
-    return full_response.str();
+   int fd[2];
+   pid_t pid;
+   
+   if (pipe(fd) == -1)
+       throw std::runtime_error("Failed to pipe");
+   pid = fork();
+   if (pid == -1)
+   {
+       close (fd[0]);
+       close (fd[1]);
+       throw std::runtime_error("Failed to fork");
+   }
+   if (pid == 0)
+   {
+       close (fd[0]);
+       if (dup2(fd[1], 1) == -1)
+       {
+           close (fd[1]);
+           throw std::runtime_error("Failed to fork");
+       }
+       close (fd[1]);
+       if (execve(args[0], (char *const *)args, NULL) == -1)
+           throw std::runtime_error("Failed to exec");
+   }
+   close(fd[1]);
+
+   char buffer[4096];
+   std::string response;
+   std::string headers;
+   std::string body;
+   bool isHeader = false;
+   ssize_t bytes;
+   
+   while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
+   {
+       response.append(buffer, bytes);
+       if (!isHeader)
+       {
+           size_t header_end = response.find("\r\n\r\n");
+           if (header_end != std::string::npos)
+           {
+               headers = response.substr(0, header_end);
+               body = response.substr(header_end + 4);
+               isHeader = true;
+           }
+       }
+   }
+   close(fd[0]);
+   
+   int status;
+   waitpid(pid, &status, 0);
+
+   bool hasContentLength = false;
+   std::stringstream fullResponse;
+   fullResponse << "HTTP/1.1 200 OK\r\n";
+   
+   if (isHeader)
+   {
+       std::istringstream header_stream(headers);
+       std::string line;
+       while (std::getline(header_stream, line))
+       {
+           if (line.find("Content-Length:") != std::string::npos)
+           {
+               hasContentLength = true;
+               fullResponse << line << "\r\n";
+           }
+           else if (line.find("Content-Type:") != std::string::npos)
+               fullResponse << line << "\r\n";
+       }
+   }
+   
+   if (!isHeader || headers.find("Content-Type:") == std::string::npos)
+   {
+       if (!strcmp("/usr/bin/python3", args[0]))
+           fullResponse << "Content-Type: text/html\r\n";
+       else
+           fullResponse << "Content-Type: image/jpeg\r\n";
+   }
+   
+   if (!hasContentLength)
+   {
+       if (!isHeader) 
+           body = response;
+       fullResponse << "Content-Length: " << body.length() << "\r\n\r\n";
+       fullResponse << body;
+   }
+   
+   return fullResponse.str();
 }
 
 void Epoll::handleWrite(int &fd)
