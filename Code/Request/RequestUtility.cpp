@@ -7,7 +7,11 @@ void Request::setError(int code) { // 에러 설정
     this->_errorCode = code;
 }
 
-void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
+void Request::normalizedPath()
+{
+    //  std::cout << (*_conf).
+    std::cout <<"this> "<< _path << std::endl;
+     // 경로 정규화 (../와 ./ 처리)
 //구현 필요
 }
 

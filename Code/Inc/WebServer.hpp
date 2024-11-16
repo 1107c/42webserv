@@ -18,5 +18,7 @@
 #include <netdb.h> 
 #include <algorithm>
 #include <string>
+#include <sys/wait.h>
+
 
 #endif

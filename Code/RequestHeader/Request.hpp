@@ -17,6 +17,7 @@ class Request {
         std::string _port;  //서버 포트
         const std::vector<std::vector<Location> > *_conf; //conf파일 서버 블락
         int _serverBlockIdx;
+        std::string _nomalizedPath;
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;  // 요청 헤더들
