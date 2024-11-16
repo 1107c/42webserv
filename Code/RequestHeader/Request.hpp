@@ -19,6 +19,7 @@ class Request {
         int _serverBlockIdx;
         std::string _mappingUrl;
 
+
         // 헤더와 바디
         std::map<std::string, std::string> _headers;  // 요청 헤더들
         std::string _body;      // 요청 바디
