@@ -14,7 +14,6 @@ void Request::redirectionPath() {
     std::string temp = path.substr(pos + str.size() + 1);
     const std::vector<std::vector<Location> >& confRef = *this->_conf;
     int serverBlockidx = this->getServerBlockIdx();
-    //int serverBlockidx = 0;
     this->_mappingUrl = confRef[serverBlockidx][0].getRoot() + temp;
 }
 
@@ -29,8 +28,23 @@ bool Request::findDot() {
     return false;
 }
 
+void Request::faviconPath() {
+    std::string path = this->getPath();
+
+    //favicon.ico 처리
+    if (path == "/favicon.ico") {
+        const std::vector<std::vector<Location> >& confRef = *this->_conf;
+        int serverBlockidx = this->getServerBlockIdx();
+        this->_mappingUrl = confRef[serverBlockidx][0].getRoot() + path;
+    } 
+}
+
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     std::string path = this->getPath();
+    if (path == "/favicon.ico") {
+        faviconPath();
+        return ;
+    }
     if (path.find("redirection") != std::string::npos) {
         redirectionPath();
         return ;

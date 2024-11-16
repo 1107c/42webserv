@@ -79,6 +79,7 @@ class Request {
         void normalizedPath();  // 경로 정규화 (../와 ./ 처리)
         bool findDot();
         void redirectionPath();
+        void faviconPath();
         bool validateRequest();  // 요청의 유효성 검사
 
 };
