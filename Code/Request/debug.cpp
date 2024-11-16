@@ -7,6 +7,9 @@ void Request::debug() {
     std::cout << "\n\n\n=== Path ===\n";
     std::cout << this->getPath();
 
+    std::cout << "\n\n\n=== Normalized Path ===\n";
+    std::cout << this->getMappingUrl();
+
     std::cout << "\n\n\n=== Server Name ===\n";
     std::cout << this->getServerName();
 

@@ -144,12 +144,29 @@ void Epoll::handleRead(int &fd)
         {
             std::cout << "Received complete request:\n" << _result[fd] << std::endl;
 
+            //1. request 요청 수락
+            Response response;
             Request request(&_config);
             request.parse(_result[fd]);
             request.debug();
 
-            GetHandler getHandler;
-            getHandler.handleRequest(request);
+            if (request.getErrorCode() >= 400) {
+                response.makeErrorMessage(request.getErrorCode());
+            }
+            else {
+                //2. 요청에 맞는 동작
+                GetHandler getHandler;
+                if (!getHandler.handleRequest(request)) {
+                    response.makeErrorMessage(500);
+                } else {
+                    //3. 동작 수행 이후 답변
+                    if (getHandler.getIsRedirection())
+                        response.makeResponseRedirectionMessage(request);
+                    else
+                        response.makeResponseGetMessage(request);
+                }
+            }
+            this->responseMessage = response.getResponseMessage();
             epoll_event ev;
             ev.events = EPOLLOUT;
             ev.data.fd = fd;
@@ -288,6 +305,10 @@ void Epoll::handleWrite(int &fd)
 {
     if (_pendingResponses.find(fd) == _pendingResponses.end())
     {
+        _pendingResponses[fd] = this->responseMessage;
+
+        std::cout << "=== response === \n";
+        std::cout << this->responseMessage << std::endl;
         const char *py[] = {
             "/usr/bin/python3",
             "python.py",

@@ -17,7 +17,8 @@ class Request {
         std::string _port;  //서버 포트
         const std::vector<std::vector<Location> > *_conf; //conf파일 서버 블락
         int _serverBlockIdx;
-        std::string _nomalizedPath;
+        std::string _mappingUrl;
+
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;  // 요청 헤더들
@@ -52,6 +53,7 @@ class Request {
         const std::string& getBody() const;
         const std::string& getServerName() const;
         const std::string& getServerPort() const;
+        const std::string& getMappingUrl() const;
         const std::map<std::string, std::string>& getHeaders() const;
         std::string getHeader(const std::string& key) const;
         int getServerBlockIdx() const;
@@ -75,6 +77,8 @@ class Request {
         void parseQueryString(const std::string& url);
         void setError(int code);  // 에러 설정
         void normalizedPath();  // 경로 정규화 (../와 ./ 처리)
+        bool findDot();
+        void redirectionPath();
         bool validateRequest();  // 요청의 유효성 검사
 
 };

@@ -11,3 +11,4 @@ const std::map<std::string, std::string>& Request::getHeaders() const { return t
 std::string Request::getHeader(const std::string& key) const { return this->_headers.at(key); }
 int Request::getServerBlockIdx() const {return this->_serverBlockIdx; }
 const std::vector<std::vector<Location> > *Request::getConfig() const { return this->_conf; }
+const std::string& Request::getMappingUrl() const { return this->_mappingUrl; }

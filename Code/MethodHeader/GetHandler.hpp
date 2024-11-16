@@ -3,12 +3,13 @@
 
 #include "../Inc/WebServer.hpp"
 #include "../RequestHeader/Request.hpp"
+#include "../ResponseHeader/Response.hpp"
 
 class GetHandler {
     private:
         // 리다이렉션 관련 상수
         static const int MAX_REDIRECTS = 5;  // 최대 리다이렉션 횟수
-       
+       bool _isRedirection;
         struct RedirectConfig {
             std::string from_path;
             std::string to_path;
@@ -20,12 +21,16 @@ class GetHandler {
         GetHandler();
         
         // GET 요청 처리 메인 함수
-        std::string handleRequest(Request &requestMessage);
+        bool handleRequest(Request &requestMessage);
 
         //리다이렉션 요청 확인
         bool checkRedirection(Request& request);
         bool checkRedirectionCondition(Request& request);
         bool checkRedirectionConfig(Request& request);
+
+
+        //게터
+        bool getIsRedirection() const;
 };
 
 #endif
