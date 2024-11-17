@@ -11,10 +11,10 @@ void Request::redirectionPath() {
     std::string path = this->getPath();
     std::string str = "redirection";
     size_t pos = path.find(str);
-    std::string temp = path.substr(pos + str.size() + 1);
-    const std::vector<std::vector<Location> >& confRef = *this->_conf;
-    int serverBlockidx = this->getServerBlockIdx();
-    this->_mappingUrl = confRef[serverBlockidx][0].getRoot() + temp;
+    if (*(*_conf)[getServerBlockIdx()][0].getRoot().rend() == '/')
+        this->_mappingUrl = (*_conf)[getServerBlockIdx()][0].getRoot() + path.substr(pos + str.size() + 1);
+    else
+        this->_mappingUrl = (*_conf)[getServerBlockIdx()][0].getRoot() + '/' + path.substr(pos + str.size() + 1);
 }
 
 bool Request::findDot() {
@@ -28,59 +28,66 @@ bool Request::findDot() {
     return false;
 }
 
-void Request::faviconPath() {
-    std::string path = this->getPath();
-
-    //favicon.ico 처리
-    if (path == "/favicon.ico") {
-        const std::vector<std::vector<Location> >& confRef = *this->_conf;
-        int serverBlockidx = this->getServerBlockIdx();
-        this->_mappingUrl = confRef[serverBlockidx][0].getRoot() + path;
-    } 
-}
-
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
-    std::string path = this->getPath();
-    if (path == "/favicon.ico") {
-        faviconPath();
-        return ;
-    }
-    if (path.find("redirection") != std::string::npos) {
+    if (!strncmp("/redirection", _path.c_str(), 12)) {
         redirectionPath();
+        std::cout << "Path : " << _path << std::endl;
+        std::cout << "Mapping : " << _mappingUrl << std::endl;
         return ;
     }
 
-    std::string temp;
-    size_t pos = path.rfind("/");
-    if (pos != std::string::npos) {
-        if (findDot()) {
-            temp = path.substr(pos + 1);
-            path = path.substr(0, pos);
-        }
-    } else return ;
-
-    int serverBlockIdx = this->getServerBlockIdx();
-    //int serverBlockIdx = 0;
-    const std::vector<std::vector<Location> >& confRef = *this->_conf;
-    size_t size = std::count(path.begin(), path.end(), '/');
-    for (size_t i = 0; i < size; ++i) {
-        for (size_t j = 1; j < confRef[serverBlockIdx].size(); ++j) {
-            if (confRef[serverBlockIdx][j].getPath() == path) {
-                this->_mappingUrl = confRef[serverBlockIdx][j].getRoot() + temp;
-                break ;
-            }
-        }
-        if (!this->_mappingUrl.empty())
-            break ;
-        pos = path.rfind("/");
-        temp = path.substr(pos) + temp;
-        path = path.substr(0, pos);
+    if (!strncmp(_path.c_str(), (*_conf)[getServerBlockIdx()][0].getRoot().c_str(), (*_conf)[getServerBlockIdx()][0].getRoot().length()))
+    {
+        _mappingUrl = _path;
+        return ;
     }
+
+    // for(size_t locationIdx = 1; locationIdx < (*_conf)[getServerBlockIdx()].size(); ++locationIdx)
+    // {
+    //     if ((*_conf)[getServerBlockIdx()][locationIdx].getPath() == _path) {
+    //         _mappingUrl = (*_conf)[getServerBlockIdx()][locationIdx].getRoot() + "/" + (*_conf)[getServerBlockIdx()][locationIdx].getIndex();
+    //         return;
+    //     }
+    // }
+    _mappingUrl = (*_conf)[getServerBlockIdx()][0].getRoot() + _path;
+    // std::string path = this->getPath();
+    // //favicon 처리해야함
+    // if (path.find("redirection") != std::string::npos) {
+    //     redirectionPath();
+    //     return ;
+    // }
+
+    // std::string temp;
+    // size_t pos = path.rfind("/");
+    // if (pos != std::string::npos) {
+    //     if (findDot()) {
+    //         temp = path.substr(pos + 1);
+    //         path = path.substr(0, pos);
+    //     }
+    // } else return ;
+
+    // int serverBlockIdx = this->getServerBlockIdx();
+    // //int serverBlockIdx = 0;
+    // const std::vector<std::vector<Location> >& confRef = *this->_conf;
+    // size_t size = std::count(path.begin(), path.end(), '/');
+    // for (size_t i = 0; i < size; ++i) {
+    //     for (size_t j = 1; j < confRef[serverBlockIdx].size(); ++j) {
+    //         if (confRef[serverBlockIdx][j].getPath() == path) {
+    //             this->_mappingUrl = confRef[serverBlockIdx][j].getRoot() + temp;
+    //             break ;
+    //         }
+    //     }
+    //     if (!this->_mappingUrl.empty())
+    //         break ;
+    //     pos = path.rfind("/");
+    //     temp = path.substr(pos) + temp;
+    //     path = path.substr(0, pos);
+    // }
+
 }
 
 bool Request::validateRequest() { // 요청의 유효성 검사
     //1. Request메시지 확인 후(서버 네임, 포트 번호) 알맞은 서버 블록 가져오기
-    std::cout << "Validation\n";
     Location location;
     int findIdx = -1;
     unsigned int serverPort;
@@ -116,6 +123,7 @@ bool Request::validateRequest() { // 요청의 유효성 검사
         setError(400);
         return false;
     }
+
     //2. 서버 블록에 맞게 허용 메소드 확인하기
     //std::cout << location.getMethod() << std::endl;
     int methodFindIdx = -1;
@@ -125,7 +133,7 @@ bool Request::validateRequest() { // 요청의 유효성 검사
         }
     }
     if (methodFindIdx == -1) {
-        setError(400);
+        setError(405);
         return false;
     }
 
@@ -134,8 +142,6 @@ bool Request::validateRequest() { // 요청의 유효성 검사
         setError(400);
         return false;
     }
-
-std::cout << "validation end\n";
     return true;
 }
 

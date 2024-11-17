@@ -18,15 +18,18 @@ RM := rm -f
 
 NAME := webserv
 
+UTILITY = ./Utility/ToString.cpp
+
 CONFIGURE = ./Configure/Conf.cpp ./Configure/Location.cpp ./Configure/ServerBlock.cpp
 REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp
 SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
-METHOD = ./Method/GetCheckRedirection.cpp ./Method/GetHandler.cpp ./Method/GetHandlerGetter.cpp
+METHOD = $(GET)
+GET = ./Method/GET/GetCheckRedirection.cpp ./Method/GET/GetHandler.cpp ./Method/GET/GetHandlerGetter.cpp ./Method/GET/GetHandlerUtility.cpp
 
 RESPONSE = ./Response/Response.cpp ./Response/ResponseGetter.cpp ./Response/ResponseMessage.cpp ./Response/ResponseMessageUtility.cpp
 INC_DIR := .
-SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD) $(RESPONSE)
+SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD) $(RESPONSE) $(UTILITY)
 OBJS := $(SRCS:.cpp=.o)
 
 .PHONY : all start clean fclean re

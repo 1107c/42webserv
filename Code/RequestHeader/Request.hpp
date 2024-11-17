@@ -38,6 +38,9 @@ class Request {
         Request(const std::vector<std::vector<Location> > *conf);
         ~Request();
 
+        //request 메인함수
+        bool requestHandler(const std::string& rawRequest);
+
         // 파싱 메소드
         bool parse(const std::string& rawRequest);
         bool parseStartLine(const std::string& line);
@@ -58,6 +61,7 @@ class Request {
         std::string getHeader(const std::string& key) const;
         int getServerBlockIdx() const;
         const std::vector<std::vector<Location> > *getConfig() const;
+        const std::string getAccept() const;
 
         // 상태 확인 메소드들
         bool isChunked() const;  // chunked transfer-encoding 확인
@@ -71,15 +75,14 @@ class Request {
         // Utility 메소드들
         void clear();  // 요청 객체 초기화
         void debug(); //안에 내용 출력
+        void setError(int code);  // 에러 설정
         
     private:
         // 내부 헬퍼 메소드들
         void parseQueryString(const std::string& url);
-        void setError(int code);  // 에러 설정
         void normalizedPath();  // 경로 정규화 (../와 ./ 처리)
         bool findDot();
         void redirectionPath();
-        void faviconPath();
         bool validateRequest();  // 요청의 유효성 검사
 
 };

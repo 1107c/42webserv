@@ -11,14 +11,21 @@ bool Request::parse(const std::string& rawRequest) {
 
         //2. start line 파싱
         ssize_t firstLine = rawRequest.find("\r\n");
+        if (headerEnd == std::string::npos) {
+            setError(400);
+            return false;
+        }
+
         std::string startLine = rawRequest.substr(0, firstLine);
         if (!parseStartLine(startLine)) {
+            setError(400);
             return false;
         }
 
         //3. 헤더 파싱
         std::string headers = rawRequest.substr(firstLine + 2, headerEnd - firstLine - 2);
         if (!parseHeaders(headers)) {
+            setError(400);
             return false;
         }
 
@@ -26,6 +33,7 @@ bool Request::parse(const std::string& rawRequest) {
         if (headerEnd + 4 < rawRequest.length()) {
             std::string body = rawRequest.substr(headerEnd + 4);
             if (!parseBody(body)) {
+                setError(400);
                 return false;
             }
         }
@@ -33,8 +41,10 @@ bool Request::parse(const std::string& rawRequest) {
 
         //안에서 iscomplete flag 세워야함
         if (validateRequest() == false) {
-            //response 메시지로 바로 던지기
+            return false;
         }
+        normalizedPath();
+        this->_isComplete = true;
     } catch (const std::exception& e) {
         setError(400);
         return false;
@@ -155,6 +165,4 @@ void Request::parseQueryString(const std::string& url) {
     } else {
         this->_path = url.substr(0);
     }
-
-    normalizedPath();
 }

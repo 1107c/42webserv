@@ -9,7 +9,8 @@ class GetHandler {
     private:
         // 리다이렉션 관련 상수
         static const int MAX_REDIRECTS = 5;  // 최대 리다이렉션 횟수
-       bool _isRedirection;
+        bool _isRedirection;
+
         struct RedirectConfig {
             std::string from_path;
             std::string to_path;
@@ -31,6 +32,9 @@ class GetHandler {
 
         //게터
         bool getIsRedirection() const;
+
+        //유틸리티
+        bool checkFileAccess(Request& request);
 };
 
 #endif

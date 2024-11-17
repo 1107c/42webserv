@@ -1,48 +1,62 @@
 #include "../ResponseHeader/Response.hpp"
 
-//1. 에러 메시지
-
-
-//2. Get 리다이렉션 메시지
+//1. Get 리다이렉션 메시지
 void Response::makeResponseRedirectionMessage(Request& request) {
+    std::cout << "리다이렉션 리스폰스 메시지\n";
     this->_header.erase(0, std::string::npos);
     this->_body.erase(0, std::string::npos);
 
     _header += request.getVersion() + " 301 Moved Permanently\r\n";
     _header += "Location: " + request.getMappingUrl() + "\r\n";
-    _header += "Content-Type: text/html\r\n";
+    _header += "Content-Type: " + request.getAccept() + "\r\n";
     _header += "Content-Length: 0\r\n";
     _header += "\r\n";
-
-    //_body += getRedirectionFileContent(request) + "\r\n";
 }
-//3. Get 데이터 요청 메시지
+
+//2. Get 데이터 요청 메시지
 void Response::makeResponseGetMessage(Request& request) {
+    std::cout << "겟 리스폰스 메시지\n";
     this->_header.erase(0, std::string::npos);
     this->_body.erase(0, std::string::npos);
 
+    if (request.getPath() == "/favicon.ico") {
+        if (getFaviconFile(request) == false) {
+            makeErrorMessage(500);
+            return ;
+        }
+        _body += "\r\n";
+        _header += request.getVersion() + " 200 OK\r\n";
+        _header += "Content-Type: " + request.getAccept() + "\r\n";
+        _header += "Content-Length: " + ToString(_contentLength) + "\r\n";
+        _header += "Cache-Control: public, max-age=86400\r\n";
+        _header += "\r\n";
 
-    _body += getRedirectionFileContentLength(request) + "\r\n";
-
-    std::ostringstream oss;
-    oss << _contentLength;
-    std::string str = oss.str();
-
-    _header += request.getVersion() + " 200 OK\r\n";
-    _header += "Content-Type: text/html\r\n";
-    _header += "Content-Length: " + str + "\r\n";
-    _header += "\r\n";
+    } else {
+        if (getRedirectionFile(request) == false) {
+            makeErrorMessage(500);
+            std::cerr << "뭔가 문제\n";
+            return ;
+        }
+        _body += "\r\n";
+        _header += request.getVersion() + " 200 OK\r\n";
+        _header += "Content-Type: " + request.getAccept() + "\r\n";
+        _header += "Content-Length: " + ToString(_contentLength) + "\r\n";
+        _header += "\r\n";
+    }
 }
 
-//4. POST 메시지
-//5. Delete 메시지
+//3. POST 메시지
+//4. Delete 메시지
 
-//6. 에러 메시지
+//5. 에러 메시지
 void Response::makeErrorMessage(int statusCode) {
     this->_header.erase(0, std::string::npos);
     this->_body.erase(0, std::string::npos);
 
-    _body += getErrorFileContentLength(statusCode) + "\r\n";
+    if (getErrorFile(statusCode) == false) {
+        statusCode = 500;
+    }
+    _body += "\r\n";
     
     std::string statusLine;
     switch (statusCode) {
@@ -71,13 +85,9 @@ void Response::makeErrorMessage(int statusCode) {
             statusLine = "HTTP/1.1 500 Internal Server Error\r\n";
     }
 
-    std::ostringstream oss;
-    oss << _contentLength;
-    std::string str = oss.str();
-
     this->_header = statusLine;
     this->_header += "Content-Type: text/html\r\n";
-    this->_header += "Content-Length: " + str + "\r\n";
+    this->_header += "Content-Length: " + ToString(_contentLength) + "\r\n";
     this->_header += "\r\n";
     //오류 파일 맵핑해서 같이 보내기
 }

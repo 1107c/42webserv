@@ -142,22 +142,27 @@ void Epoll::handleRead(int &fd)
         // if (result.find("favicon") == std::string::npos)
         if (_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n")
         {
-            std::cout << "Received complete request:\n" << _result[fd] << std::endl;
+            //std::cout << "Received complete request:\n" << _result[fd] << std::endl;
 
             //1. request 요청 수락
+            std::cout << "=== Request Message ===\n";
             Response response;
             Request request(&_config);
-            request.parse(_result[fd]);
-            request.debug();
+            request.requestHandler(_result[fd]);
+            std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
 
-            if (request.getErrorCode() >= 400) {
+            if (request.isComplete() == false) {
                 response.makeErrorMessage(request.getErrorCode());
             }
             else {
                 //2. 요청에 맞는 동작
                 GetHandler getHandler;
                 if (!getHandler.handleRequest(request)) {
-                    response.makeErrorMessage(500);
+                    if (request.getErrorCode() >= 400) {
+                        response.makeErrorMessage(request.getErrorCode());
+                    } else{
+                        response.makeErrorMessage(500);
+                    }
                 } else {
                     //3. 동작 수행 이후 답변
                     if (getHandler.getIsRedirection())
@@ -309,12 +314,12 @@ void Epoll::handleWrite(int &fd)
 
         std::cout << "=== response === \n";
         std::cout << this->responseMessage << std::endl;
-        const char *py[] = {
-            "/usr/bin/python3",
-            "python.py",
-            NULL
-        };
-        _pendingResponses[fd] = executeCgi(py);
+        // const char *py[] = {
+        //     "/usr/bin/python3",
+        //     "python.py",
+        //     NULL
+        // };
+        //_pendingResponses[fd] = executeCgi(py);
 
         // const char *cpp[] = {
         //     "a.out",

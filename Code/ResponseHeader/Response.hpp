@@ -22,8 +22,9 @@ class Response {
         void makeErrorMessage(int status);
 
         //리다이렉션할 파일 정보
-        std::string getRedirectionFileContentLength(Request& request);
-        std::string getErrorFileContentLength(int statusCode);   
+        bool getRedirectionFile(Request& request);
+        bool getErrorFile(int statusCode);
+        bool getFaviconFile(Request& request);
 
         //게터
         std::string getResponseMessage() const;

@@ -1,4 +1,4 @@
-#include "../MethodHeader/GetHandler.hpp"
+#include "../../MethodHeader/GetHandler.hpp"
 
 bool GetHandler::checkRedirectionConfig(Request& request) {
     const std::vector<std::vector<Location> > *conf = request.getConfig();
@@ -20,7 +20,7 @@ bool GetHandler::checkRedirectionCondition(Request& request) {
     std::string requestPath = request.getPath();
     std::cout << "config path\n";
     std::cout << request.getPath() << std::endl;
-    if (requestPath.compare(0, 9, "/redirect/", 0, 9) == 0) {
+    if (requestPath.compare(0, 12, "/redirection/", 0, 12) == 0) {
         return true;
     }
     return false;

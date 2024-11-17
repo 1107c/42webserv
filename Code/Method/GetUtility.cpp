@@ -1,2 +1,0 @@
-#include "../MethodHandler/GetHandler.hpp"
-

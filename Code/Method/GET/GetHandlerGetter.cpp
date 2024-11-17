@@ -1,4 +1,4 @@
-#include "../MethodHeader/GetHandler.hpp"
+#include "../../MethodHeader/GetHandler.hpp"
 
 bool GetHandler::getIsRedirection() const {
     return _isRedirection;

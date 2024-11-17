@@ -12,3 +12,13 @@ std::string Request::getHeader(const std::string& key) const { return this->_hea
 int Request::getServerBlockIdx() const {return this->_serverBlockIdx; }
 const std::vector<std::vector<Location> > *Request::getConfig() const { return this->_conf; }
 const std::string& Request::getMappingUrl() const { return this->_mappingUrl; }
+const std::string Request::getAccept() const { 
+    if (this->_headers.count("Accept")) {
+        std::string accepted = this->_headers.at("Accept");
+        size_t commaPos = accepted.find(',');
+        if (commaPos != std::string::npos) {
+            return accepted.substr(0, commaPos);
+        }
+    }
+    return this->_headers.at("Accept");
+}

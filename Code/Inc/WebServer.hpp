@@ -20,5 +20,7 @@
 #include <string>
 #include <sys/wait.h>
 
+# include "../UtilityHeader/ToString.hpp"
+
 
 #endif
