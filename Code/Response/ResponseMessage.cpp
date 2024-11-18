@@ -21,7 +21,7 @@ void Response::makeResponseGetMessage(Request& request) {
 
     if (request.getPath() == "/favicon.ico") {
         if (getFaviconFile(request) == false) {
-            makeErrorMessage(500);
+            makeErrorMessage(request, 500);
             return ;
         }
         _body += "\r\n";
@@ -33,7 +33,7 @@ void Response::makeResponseGetMessage(Request& request) {
 
     } else {
         if (getRedirectionFile(request) == false) {
-            makeErrorMessage(500);
+            makeErrorMessage(request, 500);
             std::cerr << "뭔가 문제\n";
             return ;
         }
@@ -49,11 +49,11 @@ void Response::makeResponseGetMessage(Request& request) {
 //4. Delete 메시지
 
 //5. 에러 메시지
-void Response::makeErrorMessage(int statusCode) {
+void Response::makeErrorMessage(Request& request, int statusCode) {
     this->_header.erase(0, std::string::npos);
     this->_body.erase(0, std::string::npos);
 
-    if (getErrorFile(statusCode) == false) {
+    if (getErrorFile(request, statusCode) == false) {
         statusCode = 500;
     }
     _body += "\r\n";

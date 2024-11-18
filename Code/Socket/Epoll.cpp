@@ -152,16 +152,16 @@ void Epoll::handleRead(int &fd)
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
 
             if (request.isComplete() == false) {
-                response.makeErrorMessage(request.getErrorCode());
+                response.makeErrorMessage(request, request.getErrorCode());
             }
             else {
                 //2. 요청에 맞는 동작
                 GetHandler getHandler;
                 if (!getHandler.handleRequest(request)) {
                     if (request.getErrorCode() >= 400) {
-                        response.makeErrorMessage(request.getErrorCode());
+                        response.makeErrorMessage(request, request.getErrorCode());
                     } else{
-                        response.makeErrorMessage(500);
+                        response.makeErrorMessage(request, 500);
                     }
                 } else {
                     //3. 동작 수행 이후 답변

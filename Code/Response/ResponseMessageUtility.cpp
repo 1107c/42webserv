@@ -22,11 +22,17 @@ bool Response::getRedirectionFile(Request& request) {
     return true;
 }
 
-bool Response::getErrorFile(int statusCode) {
+bool Response::getErrorFile(Request& request, int statusCode) {
     std::string filePath = "/home/jajo/webserv/Code/ErrorHtml/";
     
-    filePath += ToString(statusCode) + ".html";
-
+    std::map<std::string, std::string> map = (*request.getConfig())[request.getServerBlockIdx()][0].getErrorPage();
+    std::map<std::string, std::string>::iterator it = map.find(ToString(statusCode));
+    if (it != map.end()) {
+        filePath += it->second;
+    } else {
+        filePath += ToString(statusCode) + ".html";
+    }
+    std::cout << "error url : " << filePath << std::endl;
     std::ifstream inputFile(filePath.c_str());
     if (!inputFile.is_open()) {
         return false;

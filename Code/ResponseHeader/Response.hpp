@@ -19,11 +19,11 @@ class Response {
         //메시지 생성 함수
         void makeResponseRedirectionMessage(Request& request);
         void makeResponseGetMessage(Request& request);
-        void makeErrorMessage(int status);
+        void makeErrorMessage(Request& request, int status);
 
         //리다이렉션할 파일 정보
         bool getRedirectionFile(Request& request);
-        bool getErrorFile(int statusCode);
+        bool getErrorFile(Request& request, int statusCode);
         bool getFaviconFile(Request& request);
 
         //게터
