@@ -1,6 +1,5 @@
 #include "../RequestHeader/Request.hpp"
 
-//생성자
 Request::Request() : _contentLength(0)
     , _conf(0)
     , _isParsed(false)
@@ -19,7 +18,6 @@ Request::~Request(){
 }
 
 bool Request::requestHandler(const std::string& rawRequest) {
-	std::cout << "rawRequest: " << rawRequest << "\n";
     if (parse(rawRequest) == false) {
 
         if (getErrorCode() == 0)

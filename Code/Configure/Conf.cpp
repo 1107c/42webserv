@@ -84,7 +84,7 @@ void Conf::makeLine()
 bool Conf::checkBrace()
 {
     std::stack<char> checkStack;
-    const char* validChars = "{}/_.- ;+\n\t:";
+    const char* validChars = "{}/_.- ;+\n\t: ";
 
     for (std::string::const_iterator i = _line.begin(); i != _line.end(); ++i)
     {
@@ -243,29 +243,18 @@ bool    Conf::parseLine(std::string::const_iterator &i)
     while (*i && !isSpace(i)) {++i;}
     key = std::string(start, i);
     while (*i && isSpace(i)) {++i;}
-	// std::cout << "key: " << key << "\n";
     if (key.empty())
         return true;
-	else if (key == "server")
-	{
-		--i;
-        while ((*i == ' ' || *i == '\t' || *i == '\n') && *i)
-            --i;
-        i -= 6;
-		return true;
-	}
-    // else if (*i == '{')
-    // {
-    //     _block.push_back(Location());
-    //     _back = &_block.back();
-    //     return true;
-    // }
+    else if (*i == '{')
+    {
+        _block.push_back(Location());
+        _back = &_block.back();
+        return true;
+    }
     if (!allowConf(key))
         return false;
     if (parseLoc(key, start, i))
         return true;
-	else if (key == "location")
-		return false;
     while (*i && isSpace(i)) {++i;}
     start = i;
     while (*i && *i != ';' && !isspace(*i)) {++i;}
@@ -282,7 +271,6 @@ bool    Conf::parseBlock(std::string::const_iterator &i)
     {
         _block.push_back(Location());
         _back = &_block.back();
-		_back->setServer();
     }
     while (!isFirstLine(i) && *i)
     {
@@ -383,8 +371,7 @@ void Conf::organizeServerBlocks()
     
     for (size_t i = 0; i < _block.size(); ++i)
     {
-        // if (!_block[i].getHost().empty() && !_server.back().empty())
-        if (_block[i].getIsServer() && !_server.back().empty())
+        if (!_block[i].getHost().empty() && !_server.back().empty())
         {
             _server.push_back(std::vector<Location>());
             _server.back().push_back(_block[i]);
