@@ -19,6 +19,7 @@ void Response::makeResponseGetMessage(Request& request) {
         _header += "\r\n";
 
     } else {
+        
         if (getRedirectionFile(request) == false) {
             makeErrorMessage(request, 500);
             std::cerr << "뭔가 문제\n";
