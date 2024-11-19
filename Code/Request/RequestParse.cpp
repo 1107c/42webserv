@@ -43,7 +43,6 @@ bool Request::parse(const std::string& rawRequest) {
         if (validateRequest() == false) {
             return false;
         }
-        normalizedPath();
         this->_isComplete = true;
     } catch (const std::exception& e) {
         setError(400);
@@ -85,7 +84,6 @@ bool Request::parseHeaders(const std::string& headerSection) {
         std::string key = line.substr(0, colonPos);
         std::string value = line.substr(colonPos + 1);
 
-        //앞뒤 공백 제거
         value.erase(0, value.find_first_not_of(" "));
         value.erase(value.find_last_not_of(" \r") + 1);
 
@@ -131,7 +129,6 @@ bool Request::parseHeaders(const std::string& headerSection) {
     return true;
 }
 
-//chunked되었다고 명시되어있지 않으면 바디부 그냥 무시됌 따로 에러처리 없음
 bool Request::parseBody(const std::string& bodyContent) {
     if (isChunked()) {
         //chunked encoding 처리
@@ -159,9 +156,7 @@ void Request::parseQueryString(const std::string& url) {
     //Query string 처리
     if (queryPos != std::string::npos) {
         this->_path = url.substr(0, queryPos);
-        //뒤에 공백있는지 확인 해야 할 것 같기도..
         this->_query = url.substr(queryPos + 1);
-        std::cout << "Query parsing : " << this->_query << std::endl;
     } else {
         this->_path = url.substr(0);
     }

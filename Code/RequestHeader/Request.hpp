@@ -8,27 +8,29 @@
 
 class Request {
     private:
-        // HTTP 요청의 주요 구성요소
-        std::string _method;        // GET, POST, DELETE 등
-        std::string _path;      // 요청 경로 (/index.html 등)
-        std::string _query;   // 쿼리 스트링
-        std::string _version;      // HTTP 버전 (HTTP/1.1 등)
-        std::string _serverName; //서버 네임
-        std::string _port;  //서버 포트
-        const std::vector<std::vector<Location> > *_conf; //conf파일 서버 블락
-        int _serverBlockIdx;
+        //HTTP 메시지
+        std::string _method;       
+        std::string _path;      
+        std::string _query;   
+        std::string _version;      
+        std::string _serverName; 
+        std::string _port;  
         std::string _mappingUrl;
 
-
         // 헤더와 바디
-        std::map<std::string, std::string> _headers;  // 요청 헤더들
-        std::string _body;      // 요청 바디
-            
+        std::map<std::string, std::string> _headers;
+        std::string _body;
+        size_t _contentLength;
+
+        //서버 conf 파일 설정
+        const std::vector<std::vector<Location> > *_conf; 
+        int _serverBlockIdx;
+        Location _location;
+
         // 파싱 관련 상태
         bool _isParsed;
         bool _isComplete;
-        size_t _contentLength;
-            
+ 
         // 에러 관리
         int _errorCode;
             
@@ -76,7 +78,13 @@ class Request {
         void clear();  // 요청 객체 초기화
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
-        
+
+        bool getConfigOption();
+
+
+
+        int getLocationBlock(int& serverBlockIdx);
+        bool isCorretPort(size_t& serverBlockIdx);
     private:
         // 내부 헬퍼 메소드들
         void parseQueryString(const std::string& url);

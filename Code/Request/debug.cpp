@@ -1,6 +1,12 @@
 #include "../RequestHeader/Request.hpp"
 
 void Request::debug() {
+
+    std::cout << "\n\n\n=== Location ===\n";
+    std::cout << _location.getPath() << std::endl;
+    std::cout << _location.getHost() << std::endl;
+    std::cout << _location.getRedirect() << std::endl;
+
     // std::cout << "=== Method ===\n";
     // std::cout << this->getMethod();
 
@@ -10,11 +16,11 @@ void Request::debug() {
     std::cout << "\n\n\n=== Normalized Path ===\n";
     std::cout << this->getMappingUrl();
 
-    // std::cout << "\n\n\n=== Server Name ===\n";
-    // std::cout << this->getServerName();
+    std::cout << "\n\n\n=== Server Name ===\n";
+    std::cout << this->getServerName();
 
-    // std::cout << "\n\n\n=== Port ===\n";
-    // std::cout << this->getServerPort();
+    std::cout << "\n\n\n=== Port ===\n";
+    std::cout << this->getServerPort();
 
     // std::cout << "\n\n\n=== Query ===\n";
     // std::cout << this->getQuery();
