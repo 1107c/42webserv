@@ -84,6 +84,7 @@ class Request {
         bool findDot();
         void redirectionPath();
         bool validateRequest();  // 요청의 유효성 검사
+        void normalizeSlashes();
 
 };
 

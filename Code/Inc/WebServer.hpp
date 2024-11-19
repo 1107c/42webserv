@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <string>
 #include <sys/wait.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 # include "../UtilityHeader/ToString.hpp"
 
