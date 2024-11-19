@@ -20,6 +20,7 @@ class Location : public ServerBlock
         bool setPath(const std::string& path);
         bool setCgi(const std::string& cgi);
         bool setRedirect(const std::string& cgi);
+		void setServer(void);
         
         const std::string &getPath() const;
         const std::vector<std::string> &getCgi() const;

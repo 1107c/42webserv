@@ -23,7 +23,8 @@ bool Response::getRedirectionFile(Request& request) {
 }
 
 bool Response::getErrorFile(Request& request, int statusCode) {
-    std::string filePath = "/home/jajo/webserv/Code/ErrorHtml/";
+    std::string filePath = "/home/ksuh/webserv/Code/ErrorHtml/";
+    // std::string filePath = "/home/jajo/webserv/Code/ErrorHtml/";
     
     std::map<std::string, std::string> map = (*request.getConfig())[request.getServerBlockIdx()][0].getErrorPage();
     std::map<std::string, std::string>::iterator it = map.find(ToString(statusCode));
@@ -51,7 +52,8 @@ bool Response::getErrorFile(Request& request, int statusCode) {
 
 bool Response::getFaviconFile(Request& request) {
     (void)request;
-    std::string path = "/home/jajo/redirection/request/favicon.ico";
+    // std::string path = "/home/jajo/redirection/request/favicon.ico";
+    std::string path = "/home/ksuh/redirection/favicon.ico";
     std::ifstream file(path.c_str(), std::ios::binary);
 
     if (!file.is_open()) {

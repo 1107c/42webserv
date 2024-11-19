@@ -26,6 +26,11 @@ Location::~Location()
 
 }
 
+void Location::setServer(void)
+{
+	_isServer = 1;
+}
+
 
 bool Location::setPath(const std::string& path)
 {

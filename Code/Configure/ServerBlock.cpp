@@ -1,13 +1,13 @@
 #include "../ConfigureHeader/ServerBlock.hpp"
 
-ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(),
- _root(""), _methods(), _autoidx(false), _index(), _error()
+ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(0),
+ _root(""), _methods(), _autoidx(false), _index(), _error(), _isServer(0), _isAuto(0)
 {
-
 }
 
 ServerBlock::ServerBlock(const ServerBlock &other): _host(other._host), _port(other._port), _server(other._server), _size(other._size),
- _root(other._root), _methods(other._methods), _autoidx(other._autoidx), _index(other._index), _error(other._error)
+ _root(other._root), _methods(other._methods), _autoidx(other._autoidx), _index(other._index), _error(other._error),
+ _isServer(other._isServer), _isAuto(other._isAuto)
 {
 }
 
@@ -24,6 +24,8 @@ ServerBlock &ServerBlock::operator&=(const ServerBlock &other)
         _autoidx = other._autoidx;
         _index = other._index;
         _error = other._error;
+		_isServer = other._isServer;
+		_isAuto = other._isAuto;
     }
     return *this;
 }
@@ -44,7 +46,7 @@ unsigned int ServerBlock::strtoul(const std::string &value)
 }
 bool ServerBlock::setHost(const std::string& host)
 {
-    if (host.empty())
+    if (host.empty() || host[0] == '.' || _host != "")
         return false;
     int count = 0;
     int dot = 0;
@@ -66,7 +68,7 @@ bool ServerBlock::setHost(const std::string& host)
         }
         ++count;
     }
-    if (dot != 3)
+    if (dot != 3 || start == host.end())
         return false;
     _host = host;
     return true;
@@ -74,13 +76,15 @@ bool ServerBlock::setHost(const std::string& host)
 
 bool ServerBlock::setPort(unsigned int port)
 {
-    if (std::find(_port.begin(), _port.end(), port) != _port.end() || port > 65535)
+    if (std::find(_port.begin(), _port.end(), port) != _port.end() || port > 65535 || port < 1024)
         return false;  
     _port.push_back(port);
     return true;
 }
 bool ServerBlock::setServerName(const std::string& server) 
 {
+	if (server.empty())
+		return false;
     if (std::find(_server.begin(), _server.end(), server) != _server.end())
         return false;
     _server.push_back(server);
@@ -90,12 +94,14 @@ bool ServerBlock::setClientMaxBodySize(const std::string &value)
 {
     char *end;
 
+	if (_size)
+		return false;
     unsigned long size = std::strtoul(value.c_str(), &end, 10);
     if (*end == 'M')
         size *= 1000 * 1000;
     else if (*end == 'K')
         size *= 1000;
-    if (size == 0 || size >= MAX_BODY_SIZE || (*end && (*end != 'M' && *end != 'K')))
+    if (size == 0 || size >= MAX_BODY_SIZE || (*end && *(end + 1)))
         return false;
     _size = size;
     return true;
@@ -130,7 +136,7 @@ bool ServerBlock::setErrorPage(const std::string& num, const std::string& page)
 
 bool ServerBlock::setRoot(const std::string& root)
 {
-    if (    !validatePath(root))
+    if ( _root != "" || !validatePath(root))
         return false;
     _root = root;
     return true;
@@ -141,6 +147,10 @@ bool ServerBlock::setIndex(const std::string& index)
     //     _root += '/';
     // if (access((_root + index).c_str(), X_OK) != 0)
     //     return false;
+	if (index.empty())
+		return false;
+	if (std::find(_index.begin(), _index.end(), index) != _index.end())
+        return false; 
     _index.push_back(index);
     return true;
 }
@@ -148,13 +158,16 @@ bool ServerBlock::setMethods(const std::string& methods)
 {
     if (!(methods == "GET" || methods == "POST" || methods == "DELETE"))
         return false;
+    if (std::find(_methods.begin(), _methods.end(), methods) != _methods.end())
+        return false; 
     _methods.push_back(methods);
     return true;
 }
 bool ServerBlock::setAutoindex(const std::string& autoindex)
 {
-    if (autoindex != "on" && autoindex != "off")
+    if (_isAuto || (autoindex != "on" && autoindex != "off"))
         return false;
+    _isAuto = 1;
     if (autoindex == "on")
         _autoidx = true;
     return true;
@@ -195,4 +208,8 @@ const std::vector<std::string> &ServerBlock::getMethods() const
 const bool &ServerBlock::getAutoindex() const
 {
     return _autoidx;
+}
+const int &ServerBlock::getIsServer() const
+{
+    return _isServer;
 }

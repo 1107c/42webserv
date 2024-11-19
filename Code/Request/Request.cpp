@@ -19,6 +19,7 @@ Request::~Request(){
 }
 
 bool Request::requestHandler(const std::string& rawRequest) {
+	std::cout << "rawRequest: " << rawRequest << "\n";
     if (parse(rawRequest) == false) {
         if (getErrorCode() == 0)
             setError(400);

@@ -49,7 +49,7 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //         return;
     //     }
     // }
-    _mappingUrl = (*_conf)[getServerBlockIdx()][0].getRoot() + _path;
+    _mappingUrl = (*_conf)[getServerBlockIdx()][0].getRoot();
     // std::string path = this->getPath();
     // //favicon 처리해야함
     // if (path.find("redirection") != std::string::npos) {

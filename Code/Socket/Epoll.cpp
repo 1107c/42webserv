@@ -148,7 +148,9 @@ void Epoll::handleRead(int &fd)
             std::cout << "=== Request Message ===\n";
             Response response;
             Request request(&_config);
+			std::cout << "Here: " << request.getPath() << std::endl;
             request.requestHandler(_result[fd]);
+			std::cout << "Here: " << request.getPath() << std::endl;
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
 
             if (request.isComplete() == false) {

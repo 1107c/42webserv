@@ -15,6 +15,8 @@ class ServerBlock
 		std::vector<std::string>	_index;
 		std::map<std::string, std::string>	_error;
         static const unsigned int MAX_BODY_SIZE = 2097152; 
+		int							_isServer;
+		int							_isAuto;
     public :
         ServerBlock();
         ServerBlock(const ServerBlock &other);
@@ -41,6 +43,7 @@ class ServerBlock
         const std::vector<std::string> &getIndex() const;
         const std::vector<std::string> &getMethods() const;
         const bool &getAutoindex() const;
+        const int &getIsServer() const;
     };
 
 #endif
