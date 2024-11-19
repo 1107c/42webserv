@@ -4,6 +4,7 @@ bool Response::getRedirectionFile(Request& request) {
     std::cout << "파일 읽고 리스폰스 남기미\n";
     std::cout << "path : " << request.getPath() << std::endl;
     std::string filePath = request.getMappingUrl();
+    filePath.erase(0, 21);
     std::ifstream inputFile(filePath.c_str());
 
 

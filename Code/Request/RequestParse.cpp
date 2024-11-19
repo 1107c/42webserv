@@ -38,12 +38,6 @@ bool Request::parse(const std::string& rawRequest) {
             }
         }
         this->_isParsed = true;
-
-        //안에서 iscomplete flag 세워야함
-        if (validateRequest() == false) {
-            return false;
-        }
-        this->_isComplete = true;
     } catch (const std::exception& e) {
         setError(400);
         return false;

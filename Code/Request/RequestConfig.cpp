@@ -19,6 +19,7 @@ bool Request::getConfigOption() {
         }
     }
     if (serverBlockIdx == -1) {
+        setError(400);
         return false;
     }
 
@@ -52,6 +53,7 @@ int Request::getLocationBlock(int& serverBlockIdx) {
     size_t index = -1;
     int tmp;
 
+    // "/"단위로 끊겨야돼
     for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {
         //_path와 .getPath()의 값이 얼마만큼 같냐
         tmp = ft_strncmp(_path, (*_conf)[serverBlockIdx][locationIdx].getPath());

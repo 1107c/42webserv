@@ -29,6 +29,10 @@ bool Request::requestHandler(const std::string& rawRequest) {
     if (getConfigOption() == false) {
         return false;
     }
+    if (validateRequest() == false) {
+        return false;
+    }
+    _isParsed = true;
     normalizedPath();
     debug();
     return true;

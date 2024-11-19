@@ -146,6 +146,7 @@ void Epoll::handleRead(int &fd)
 
             //1. request 요청 수락
             std::cout << "=== Request Message ===\n";
+            std::cout << _result[fd] << std::endl;
             Response response;
             Request request(&_config);
 			std::cout << "Here: " << request.getPath() << std::endl;
@@ -167,10 +168,7 @@ void Epoll::handleRead(int &fd)
                     }
                 } else {
                     //3. 동작 수행 이후 답변
-                    if (getHandler.getIsRedirection())
-                        response.makeResponseRedirectionMessage(request);
-                    else
-                        response.makeResponseGetMessage(request);
+                    response.makeResponseGetMessage(request);
                 }
             }
             this->responseMessage = response.getResponseMessage();

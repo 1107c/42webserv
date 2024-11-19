@@ -75,14 +75,11 @@ class Request {
 
 
         // Utility 메소드들
-        void clear();  // 요청 객체 초기화
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
 
+        //config 파일이랑 연결
         bool getConfigOption();
-
-
-
         int getLocationBlock(int& serverBlockIdx);
         bool isCorretPort(size_t& serverBlockIdx);
     private:
@@ -92,8 +89,6 @@ class Request {
         bool findDot();
         void redirectionPath();
         bool validateRequest();  // 요청의 유효성 검사
-        void normalizeSlashes();
-
 };
 
 #endif

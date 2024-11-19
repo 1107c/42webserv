@@ -1,18 +1,5 @@
 #include "../ResponseHeader/Response.hpp"
 
-//1. Get 리다이렉션 메시지
-void Response::makeResponseRedirectionMessage(Request& request) {
-    std::cout << "리다이렉션 리스폰스 메시지\n";
-    this->_header.erase(0, std::string::npos);
-    this->_body.erase(0, std::string::npos);
-
-    _header += request.getVersion() + " 301 Moved Permanently\r\n";
-    _header += "Location: " + request.getMappingUrl() + "\r\n";
-    _header += "Content-Type: " + request.getAccept() + "\r\n";
-    _header += "Content-Length: 0\r\n";
-    _header += "\r\n";
-}
-
 //2. Get 데이터 요청 메시지
 void Response::makeResponseGetMessage(Request& request) {
     std::cout << "겟 리스폰스 메시지\n";

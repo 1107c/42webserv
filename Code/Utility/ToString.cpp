@@ -34,3 +34,12 @@ std::string ToString(size_t num) {
     std::string st = oss.str();
     return st;
 }
+
+int ft_strncmp(std::string _path, std::string _configPath) {
+    int i = -1;
+    for(i = 0; _path[i] && _configPath[i]; i++) {
+        if (_path[i] != _configPath[i])
+            break;
+    }
+    return i;
+}

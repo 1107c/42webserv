@@ -50,8 +50,8 @@ bool Location::setCgi(const std::string& cgi)
 
 bool Location::setRedirect(const std::string& redirect)
 {
-    if (!validatePath(redirect))
-        return false;
+    // if (!validatePath(redirect))
+    //     return false;
     _redirect = redirect;
     return true;
 }

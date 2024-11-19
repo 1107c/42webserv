@@ -21,7 +21,7 @@ NAME := webserv
 UTILITY = ./Utility/ToString.cpp
 
 CONFIGURE = ./Configure/Conf.cpp ./Configure/Location.cpp ./Configure/ServerBlock.cpp
-REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp
+REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp ./Request/RequestConfig.cpp
 SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
 METHOD = $(GET)

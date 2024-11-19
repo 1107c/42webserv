@@ -84,7 +84,7 @@ void Conf::makeLine()
 bool Conf::checkBrace()
 {
     std::stack<char> checkStack;
-    const char* validChars = "{}/_.- ;+\n\t";
+    const char* validChars = "{}/_.- ;+\n\t:";
 
     for (std::string::const_iterator i = _line.begin(); i != _line.end(); ++i)
     {

@@ -11,4 +11,6 @@ std::string ToString(unsigned long long num);
 std::string ToString(unsigned int num);
 std::string ToString(size_t num);
 
+int ft_strncmp(std::string _path, std::string _configPath);
+
 #endif
