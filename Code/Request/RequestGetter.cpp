@@ -27,6 +27,6 @@ const Location& Request::getLocation() const { return this->_location; }
 const std::string Request::getContentType() const {
     std::string typeHeader = getHeader("Content-Type");
     size_t pos = typeHeader.find(" ");
-    std::string type = typeHeader.substr(pos + 1);
+    std::string type = typeHeader.substr(0, pos - 1);
     return type;
 }

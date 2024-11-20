@@ -16,13 +16,16 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
         }
         else if (_path[_path.length() - 1] != '/') {
             _mappingUrl = _location.getRoot() + _path;
+            // std::cout  <<_mappingUrl<<"|"<< _location.getRoot() <<"|"<< _path<<std::endl;
         }
     }
 }
 
 bool Request::validateRequest() {
     int methodFindIdx = -1;
+    std::cout <<"size :"<< _location.getRoot() <<std::endl;
     for(size_t methodIdx = 0; methodIdx < _location.getMethods().size(); methodIdx++) {
+        std::cout <<"method :"<<this->getMethod()<<" :confmethod :"<<_location.getMethods()[methodIdx] <<std::endl;
         if (this->getMethod() == _location.getMethods()[methodIdx]) {
             methodFindIdx = methodIdx;
         }

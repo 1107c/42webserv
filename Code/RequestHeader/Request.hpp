@@ -16,6 +16,8 @@ class Request {
         std::string _serverName; 
         std::string _port;  
         std::string _mappingUrl;
+        //post
+        std::string _boundary; 
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;
@@ -85,6 +87,7 @@ class Request {
         bool getConfigOption();
         int getLocationBlock(int& serverBlockIdx);
         bool isCorretPort(size_t& serverBlockIdx);
+        bool isCorreectServername(size_t &idx);
     private:
         // 내부 헬퍼 메소드들
         void parseQueryString(const std::string& url);

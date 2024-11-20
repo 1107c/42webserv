@@ -10,15 +10,27 @@ bool Request::isCorretPort(size_t& serverblockIdx) {
     return false;
 }
 
+bool  Request::isCorreectServername(size_t &idx)
+{
+    std::vector<std::string> server = (*_conf)[idx][0].getServerName();
+
+    for(size_t serverIdx = 0; serverIdx < server.size(); serverIdx++) {
+        if (ToString(server.at(serverIdx)) == _serverName)
+            return true;
+    }
+    return false;
+}
+
 bool Request::getConfigOption() {
     int serverBlockIdx = -1;
     for(size_t idx = 0; idx < this->_conf->size(); idx++) {
-        if (_serverName == (*_conf)[idx][0].getHost() && isCorretPort(idx)) {
+        if (isCorreectServername(idx) && isCorretPort(idx)) {
             serverBlockIdx = idx;
             break ;
         }
     }
     if (serverBlockIdx == -1) {
+
         setError(400);
         return false;
     }

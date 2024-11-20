@@ -136,28 +136,45 @@ void Epoll::handleRead(int &fd)
 {
     char buffer[5];
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
+    static int conLeng;
+    static int currentLeng;
 
     if (bytesRead > 0) {
         _result[fd].append(buffer, bytesRead);
-        if (_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n")
+        if (conLeng != 0)
+            currentLeng += bytesRead;
+        if ((_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n") ||
+        (conLeng != 0 && conLeng == currentLeng))
         {
             //std::cout << "Received complete request:\n" << _result[fd] << std::endl;
-
             //1. request 요청 수락
             std::cout << "=== Request Message ===\n";
             std::cout << _result[fd] << std::endl;
             Request request(&_config);
-			std::cout << "Here: " << request.getPath() << std::endl;
             request.requestHandler(_result[fd]);
 			std::cout << "Here: " << request.getPath() << std::endl;
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
             std::cout << "Error code : " << request.getErrorCode() << std::endl;
-                
+            std::cout << "leng" <<request.getContentLength() <<std::endl;
+            if (currentLeng == 0 && request.getContentLength() != 0)
+            {
+                conLeng = request.getContentLength(); //5644
+                return;
+            }
             Response response;
             if (request.getErrorCode())
+            {
+
                 this->responseMessage = response.errorHandler(request.getErrorCode());
+            }
             else
+            {
+
                 this->responseMessage = response.RequestHandler(request);
+            }
+            conLeng = 0;
+            currentLeng = 0;
+            _result[fd].clear();
             epoll_event ev;
             ev.events = EPOLLOUT;
             ev.data.fd = fd;
@@ -168,129 +185,15 @@ void Epoll::handleRead(int &fd)
             }
         }
     }
-    // else if (bytesRead == 0) {
-    //     //evs.erase(fd);
-    //     epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
-    //     close(fd);
-    // }
-}
-
-std::string createHttpResponse(const std::string& filePath) {
-    // HTML 파일 읽기
-    std::ifstream file(filePath.c_str());
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " + filePath);
+    else if (bytesRead == 0) {
+        //evs.erase(fd);
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
     }
-
-    // 파일 내용 읽기
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string content = buffer.str();
-    file.close();
-
-    // HTTP 응답 생성   
-    std::stringstream response;
-    response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: text/html\r\n"
-             << "Content-Length: " << content.length() << "\r\n"
-             << "\r\n"
-             << content;
-
-    return response.str();
 }
 
-std::string executeCgi(const char *(&args)[3])
-{
-   int fd[2];
-   pid_t pid;
-   
-   if (pipe(fd) == -1)
-       throw std::runtime_error("Failed to pipe");
-   pid = fork();
-   if (pid == -1)
-   {
-       close (fd[0]);
-       close (fd[1]);
-       throw std::runtime_error("Failed to fork");
-   }
-   if (pid == 0)
-   {
-       close (fd[0]);
-       if (dup2(fd[1], 1) == -1)
-       {
-           close (fd[1]);
-           throw std::runtime_error("Failed to fork");
-       }
-       close (fd[1]);
-       if (execve(args[0], (char *const *)args, NULL) == -1)
-           throw std::runtime_error("Failed to exec");
-   }
-   close(fd[1]);
 
-   char buffer[4096];
-   std::string response;
-   std::string headers;
-   std::string body;
-   bool isHeader = false;
-   ssize_t bytes;
-   
-   while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
-   {
-       response.append(buffer, bytes);
-       if (!isHeader)
-       {
-           size_t header_end = response.find("\r\n\r\n");
-           if (header_end != std::string::npos)
-           {
-               headers = response.substr(0, header_end);
-               body = response.substr(header_end + 4);
-               isHeader = true;
-           }
-       }
-   }
-   close(fd[0]);
-   
-   int status;
-   waitpid(pid, &status, 0);
 
-   bool hasContentLength = false;
-   std::stringstream fullResponse;
-   fullResponse << "HTTP/1.1 200 OK\r\n";
-   
-   if (isHeader)
-   {
-       std::istringstream header_stream(headers);
-       std::string line;
-       while (std::getline(header_stream, line))
-       {
-           if (line.find("Content-Length:") != std::string::npos)
-           {
-               hasContentLength = true;
-               fullResponse << line << "\r\n";
-           }
-           else if (line.find("Content-Type:") != std::string::npos)
-               fullResponse << line << "\r\n";
-       }
-   }
-   
-   if (!isHeader || headers.find("Content-Type:") == std::string::npos)
-   {
-       if (!strcmp("/usr/bin/python3", args[0]))
-           fullResponse << "Content-Type: text/html\r\n";
-       else
-           fullResponse << "Content-Type: image/jpeg\r\n";
-   }
-   
-   if (!hasContentLength)
-   {
-       if (!isHeader) 
-           body = response;
-       fullResponse << "Content-Length: " << body.length() << "\r\n\r\n";
-       fullResponse << body;
-   }
-   
-   return fullResponse.str();
-}
 
 void Epoll::handleWrite(int &fd)
 {

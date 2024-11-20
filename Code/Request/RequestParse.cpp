@@ -32,7 +32,11 @@ bool Request::parse(const std::string& rawRequest) {
         //4. 바디 파싱 (있는 경우)
         if (headerEnd + 4 < rawRequest.length()) {
             std::string body = rawRequest.substr(headerEnd + 4);
+        std::ofstream outFile("output.txt");  // 덮어쓰기
+        outFile << body << std::endl;
+        outFile.close();
             if (!parseBody(body)) {
+                std::cout << "^^^^^^^^^^"<<std::endl;
                 setError(400);
                 return false;
             }
@@ -130,6 +134,7 @@ bool Request::parseBody(const std::string& bodyContent) {
     } else if (this->_contentLength > 0) {
         //일반 바디 처리
         if (bodyContent.length() != this->_contentLength) {
+            std::cout << "가끔씩 post를 여러번 하다보면 requestparse.cpp 여기서 오류가 발생함 원인 불명" <<std::endl;
             setError(400);
             return false;
         }
