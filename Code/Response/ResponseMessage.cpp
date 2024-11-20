@@ -8,6 +8,7 @@ void Response::makeResponseGetMessage(Request& request) {
 
     if (request.getPath() == "/favicon.ico") {
         if (getFaviconFile(request) == false) {
+			std::cerr << "뭔가 문제1\n";
             makeErrorMessage(request, 500);
             return ;
         }

@@ -5,7 +5,6 @@ bool GetHandler::checkRedirectionConfig(Request& request) {
     std::string requestPath = request.getPath();
     int serverBlockIdx = request.getServerBlockIdx();
 
-
     std::cout << "config path : ";
     for(size_t i = 0; i < (*conf)[serverBlockIdx].size(); i++) {
         std::cout << (*conf)[serverBlockIdx][i].getPath() << " ";

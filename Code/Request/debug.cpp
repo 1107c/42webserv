@@ -49,5 +49,5 @@ void Request::debug() {
     // std::cout << this->getContentLength();
 
     std::cout << "\n\n\n=== Error Code ===\n";
-    std::cout << this->getErrorCode();
+    std::cout << this->getErrorCode() << "\n";
 }

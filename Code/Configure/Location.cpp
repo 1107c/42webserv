@@ -2,6 +2,7 @@
 
 Location::Location(): ServerBlock(), _path(""), _cgi(), _redirect("")
 {
+	ServerBlock::_isServer = false;
 }
 
 Location::Location(const Location &other) : ServerBlock(other), _path(other._path), _cgi(other._cgi), _redirect(other._redirect)
@@ -28,7 +29,7 @@ Location::~Location()
 
 void Location::setServer(void)
 {
-	_isServer = 1;
+	_isServer = true;
 }
 
 

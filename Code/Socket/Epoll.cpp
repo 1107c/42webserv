@@ -56,6 +56,7 @@ void Epoll::bindSocket(const std::string &host, const unsigned int &port)
     freeaddrinfo(result);
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
+    std::cout << "addr_sin_port: " << addr.sin_port << "\n";
     if (bind(socket, (sockaddr*)&addr, sizeof(addr)) == -1)
         throw std::runtime_error("socket bind failed");
     if (listen(socket, SOMAXCONN) == -1)
@@ -149,28 +150,28 @@ void Epoll::handleRead(int &fd)
             std::cout << _result[fd] << std::endl;
             Response response;
             Request request(&_config);
-			std::cout << "Here: " << request.getPath() << std::endl;
             request.requestHandler(_result[fd]);
-			std::cout << "Here: " << request.getPath() << std::endl;
-            std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
+			// std::cout << "Here: " << request.getPath() << std::endl;
+            std::cout << "Mapping url : " << request.getMappingUrl() << std::endl;
+			// std::cout << "22222222222222222222222222222222222222222222222\n";
 
-            if (request.isComplete() == false) {
-                response.makeErrorMessage(request, request.getErrorCode());
-            }
-            else {
-                //2. 요청에 맞는 동작
-                GetHandler getHandler;
-                if (!getHandler.handleRequest(request)) {
-                    if (request.getErrorCode() >= 400) {
-                        response.makeErrorMessage(request, request.getErrorCode());
-                    } else{
-                        response.makeErrorMessage(request, 500);
-                    }
-                } else {
-                    //3. 동작 수행 이후 답변
-                    response.makeResponseGetMessage(request);
+            // if (request.isComplete() == false) {
+            //     response.makeErrorMessage(request, request.getErrorCode());
+            // }
+            // else {
+            //2. 요청에 맞는 동작
+            GetHandler getHandler;
+            if (!getHandler.handleRequest(request)) {
+                if (request.getErrorCode() >= 400) {
+                    response.makeErrorMessage(request, request.getErrorCode());
+                } else{
+                    response.makeErrorMessage(request, 500);
                 }
+            } else {
+                //3. 동작 수행 이후 답변
+                response.makeResponseGetMessage(request);
             }
+            // }
             this->responseMessage = response.getResponseMessage();
             epoll_event ev;
             ev.events = EPOLLOUT;
@@ -300,8 +301,8 @@ std::string executeCgi(const char *(&args)[3])
        if (!isHeader) 
            body = response;
        fullResponse << "Content-Length: " << body.length() << "\r\n\r\n";
-       fullResponse << body;
    }
+   fullResponse << body;
    
    return fullResponse.str();
 }

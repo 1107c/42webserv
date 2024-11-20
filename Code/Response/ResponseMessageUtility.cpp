@@ -4,14 +4,13 @@ bool Response::getRedirectionFile(Request& request) {
     std::cout << "파일 읽고 리스폰스 남기미\n";
     std::cout << "path : " << request.getPath() << std::endl;
     std::string filePath = request.getMappingUrl();
-    filePath.erase(0, 21);
+	std::cout << "filePath: " << filePath << std::endl;
     std::ifstream inputFile(filePath.c_str());
 
 
     if (!inputFile.is_open()) {
         return false;
     }
-
     std::string fileContent;
     std::string line;
     while(std::getline(inputFile, line)) {

@@ -3,6 +3,7 @@
 GetHandler::GetHandler() {}
 
 bool GetHandler::handleRequest(Request &requestMessage) {
+	std::cout << "TTTTTTTTTTTTTTTT\n";
     //1. 리다이렉션 확인
     if (checkRedirection(requestMessage)) {
         std::cout << "Redirection 요청\n";
