@@ -62,7 +62,7 @@ std::string Response::imageHandler(const Request& request, const std::string& ac
     std::string response = "HTTP/1.1 200 OK\r\n";
     response += "Content-Type: " + accept + "\r\n";
     response += "Content-Length: " + oss.str() + "\r\n";
-    response += "\r\n";
+	response += "Date: " + getGMTDate() + "\r\n\r\n";
 
 	response.reserve(response.size() + size);
 
