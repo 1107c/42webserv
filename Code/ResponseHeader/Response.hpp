@@ -10,24 +10,21 @@ class Response {
         std::string _header;
         std::string _body;
         unsigned long long _contentLength;
-            
+        std::string getErrorPath(int error);
+        std::string getErrorHeader(int error);
+
     public:
         // 생성자
-        Response();
-        ~Response();
+        Response(): _header(""), _body(""), _contentLength(0) {}
+        ~Response() {};
 
-        //메시지 생성 함수
-        void makeResponseRedirectionMessage(Request& request);
-        void makeResponseGetMessage(Request& request);
-        void makeErrorMessage(Request& request, int status);
-
-        //리다이렉션할 파일 정보
-        bool getRedirectionFile(Request& request);
-        bool getErrorFile(Request& request, int statusCode);
-        bool getFaviconFile(Request& request);
-
-        //게터
-        std::string getResponseMessage() const;
+        //RequestHandler
+        std::string RequestHandler(Request& request);
+        std::string textHandler(const Request& request, const std::string& accept);
+        std::string imageHandler(const Request& request, const std::string& accept);
+        std::string errorHandler(int error);
+        int validateRequest(Request& request);
+        int getValidate(Request& request);
 };
 
 #endif
