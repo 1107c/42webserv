@@ -151,6 +151,7 @@ void Epoll::handleRead(int &fd)
             request.requestHandler(_result[fd]);
 			std::cout << "Here: " << request.getPath() << std::endl;
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
+            std::cout << "Error code : " << request.getErrorCode() << std::endl;
             // method405  body413
             Response response;
 
