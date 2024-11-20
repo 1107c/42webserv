@@ -22,3 +22,11 @@ const std::string Request::getAccept() const {
     }
     return this->_headers.at("Accept");
 }
+
+const Location& Request::getLocation() const { return this->_location; }
+const std::string Request::getContentType() const {
+    std::string typeHeader = getHeader("Content-Type");
+    size_t pos = typeHeader.find(" ");
+    std::string type = typeHeader.substr(pos + 1);
+    return type;
+}

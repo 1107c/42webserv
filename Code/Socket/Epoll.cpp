@@ -139,7 +139,6 @@ void Epoll::handleRead(int &fd)
 
     if (bytesRead > 0) {
         _result[fd].append(buffer, bytesRead);
-        // if (result.find("favicon") == std::string::npos)
         if (_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n")
         {
             //std::cout << "Received complete request:\n" << _result[fd] << std::endl;
@@ -147,31 +146,15 @@ void Epoll::handleRead(int &fd)
             //1. request 요청 수락
             std::cout << "=== Request Message ===\n";
             std::cout << _result[fd] << std::endl;
-            Response response;
             Request request(&_config);
 			std::cout << "Here: " << request.getPath() << std::endl;
             request.requestHandler(_result[fd]);
 			std::cout << "Here: " << request.getPath() << std::endl;
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
+            // method405  body413
+            Response response;
 
-            if (request.isComplete() == false) {
-                response.makeErrorMessage(request, request.getErrorCode());
-            }
-            else {
-                //2. 요청에 맞는 동작
-                GetHandler getHandler;
-                if (!getHandler.handleRequest(request)) {
-                    if (request.getErrorCode() >= 400) {
-                        response.makeErrorMessage(request, request.getErrorCode());
-                    } else{
-                        response.makeErrorMessage(request, 500);
-                    }
-                } else {
-                    //3. 동작 수행 이후 답변
-                    response.makeResponseGetMessage(request);
-                }
-            }
-            this->responseMessage = response.getResponseMessage();
+            this->responseMessage = response.RequestHandler(request);
             epoll_event ev;
             ev.events = EPOLLOUT;
             ev.data.fd = fd;
@@ -313,38 +296,9 @@ void Epoll::handleWrite(int &fd)
         _pendingResponses[fd] = this->responseMessage;
 
         std::cout << "=== response === \n";
-        std::cout << this->responseMessage << std::endl;
-        // const char *py[] = {
-        //     "/usr/bin/python3",
-        //     "python.py",
-        //     NULL
-        // };
-        //_pendingResponses[fd] = executeCgi(py);
+        // std::cout << this->responseMessage << std::endl;
 
-        // const char *cpp[] = {
-        //     "a.out",
-        //     NULL,
-        //     NULL
-        // };
-        // _pendingResponses[fd] = executeCgi(cpp);
-        // if (_result[fd].find("GET /styles.css") != std::string::npos) {
-        //     _pendingResponses[fd] = create_css_response();
-        // }
-        // else if (_result[fd].find("GET /favi/background") != std::string::npos) {
-        //     _pendingResponses[fd] = create_image_response();
-        // } else if (_result[fd].find("GET /favicon.ico") != std::string::npos) {
-        //     _pendingResponses[fd] = create_favi_response();
-        // } else if (_result[fd].find("GET /favi/gyeongju") != std::string::npos) {
-        //     _pendingResponses[fd] = create_test_image_response();
-        // // }
-        // } else if (_result[fd].find("Cookie") == std::string::npos) {
-        //     _pendingResponses[fd] = create_cookie_http_response();
-        // }
-        // else {
-        //     _pendingResponses[fd] = create_http_response();
-        // }
     }
-    // std::cout << _pendingResponses[fd].size() << std::endl;
     size_t to_send = std::min(_pendingResponses[fd].size(), static_cast<size_t>(5));
     int bytes_sent = send(fd, _pendingResponses[fd].c_str(), to_send, 0);
     if (bytes_sent > 0)

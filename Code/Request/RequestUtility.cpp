@@ -39,3 +39,6 @@ bool Request::validateRequest() {
     return true;
 }
 
+void Request::setMappingUrl(std::string& path) {
+    this->_mappingUrl = path;
+}

@@ -64,6 +64,8 @@ class Request {
         int getServerBlockIdx() const;
         const std::vector<std::vector<Location> > *getConfig() const;
         const std::string getAccept() const;
+        const Location& getLocation() const;
+        const std::string getContentType() const;
 
         // 상태 확인 메소드들
         bool isChunked() const;  // chunked transfer-encoding 확인
@@ -77,6 +79,7 @@ class Request {
         // Utility 메소드들
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
+		void setMappingUrl(std::string& path);
 
         //config 파일이랑 연결
         bool getConfigOption();
@@ -86,8 +89,6 @@ class Request {
         // 내부 헬퍼 메소드들
         void parseQueryString(const std::string& url);
         void normalizedPath();  // 경로 정규화 (../와 ./ 처리)
-        bool findDot();
-        void redirectionPath();
         bool validateRequest();  // 요청의 유효성 검사
 };
 
