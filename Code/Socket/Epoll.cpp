@@ -152,10 +152,12 @@ void Epoll::handleRead(int &fd)
 			std::cout << "Here: " << request.getPath() << std::endl;
             std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
             std::cout << "Error code : " << request.getErrorCode() << std::endl;
-            // method405  body413
+                
             Response response;
-
-            this->responseMessage = response.RequestHandler(request);
+            if (request.getErrorCode())
+                this->responseMessage = response.errorHandler(request.getErrorCode());
+            else
+                this->responseMessage = response.RequestHandler(request);
             epoll_event ev;
             ev.events = EPOLLOUT;
             ev.data.fd = fd;
