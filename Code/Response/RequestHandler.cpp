@@ -85,7 +85,7 @@ std::string Response::imageHandler(const Request& request, const std::string& ac
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/changhyu/st/cursus5/webserv/favi/favi.ico";
+		std::string fa = "/home/changhyu/st/cursus5/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}

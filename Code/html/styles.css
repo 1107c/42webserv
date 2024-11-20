@@ -28,7 +28,7 @@ html, body {
 .background-container {
     height: auto;
     background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1.0)),
-        url(../favi/background.jpg);
+        url(image/background.jpg);
     background-size: 100% 100%;
     background-position: center;
     display: flex;
@@ -100,7 +100,7 @@ html, body {
 	background-image: url('/api/placeholder/300/300');
 	border-radius: 20px;
 	box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-	background-image: url(../favi/gyeongju.jpeg);
+	background-image: url(image/gyeongju.jpeg);
 }
 
 .shape-title {
