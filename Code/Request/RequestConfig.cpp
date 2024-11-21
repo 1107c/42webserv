@@ -63,49 +63,24 @@ bool Request::getConfigOption() {
 
 int Request::getLocationBlock(int& serverBlockIdx) {
     int max = -1;
-    ssize_t index = -1;
-    int tmp;
-    std::string dir = _path;
-    if (dir[dir.size() - 1] != '/')
-    {
-        for (int i = dir.size() - 1; i > -1; --i)
+    ssize_t index = 0;
+
+    std::string str = _path;
+    size_t pos = str.rfind('/');
+    if (pos != std::string::npos) {
+        str.erase(pos + 1);
+    }
+
+    for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {
+        int length = (*_conf)[serverBlockIdx][locationIdx].getPath().length();
+        if (strncmp(str.c_str(), (*_conf)[serverBlockIdx][locationIdx].getPath().c_str(), length) == 0)
         {
-            if (dir[i] == '/')
-            {
-                dir = dir.substr(0, i + 1);
-                break;
+            if (max < length) {
+                max = length;
+                index = locationIdx;
             }
         }
     }
-    // std::cout <<"@@@DIR:"<<dir <<std::endl;
-    // "/"단위로 끊겨야돼
-    for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {
-        //_path와 .getPath()의 값이 얼마만큼 같냐
-        tmp = ft_strncmp(_path, (*_conf)[serverBlockIdx][locationIdx].getPath());
-
-        // if ((*_conf)[serverBlockIdx][locationIdx].getPath() == '/')
-        // std::cout << "this :" << _path << std::endl;
-        // std::cout << "this :" << (*_conf)[serverBlockIdx][locationIdx].getPath() << std::endl;
-
-        if (max < tmp && (*_conf)[serverBlockIdx][locationIdx].getPath() != _path 
-        && !(*_conf)[serverBlockIdx][locationIdx].getRedirect().empty()) {
-            max = tmp;
-            index = locationIdx;
-        } //리다이렉션일 경우 유사도
-        else if ((*_conf)[serverBlockIdx][locationIdx].getRedirect().empty() && 
-        (*_conf)[serverBlockIdx][locationIdx].getPath() == _path)
-        {
-            return locationIdx;
-        } // 완전히 일치할 경우
-    }
-    if (index == -1)
-    {
-        for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++)
-        {
-            if (dir == (*_conf)[serverBlockIdx][locationIdx].getPath())
-                return locationIdx;
-        }
-        return 0;
-    }      
+    
     return index;
 }

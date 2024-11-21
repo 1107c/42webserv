@@ -1,0 +1,66 @@
+1. / 단위로 끊겨야 한다.
+/abc/def -> /abc 블록
+/abc/def/ -> /abc/def 블록
+
+2. 리다이렉션 처리를 겟 요청 두번으로 해야 한다.
+- 처음 요청이 들어오면 전체 url 즉, config 파일의 return 값을 location에 담아 보내고
+- 그 다음 요청이 들어오면, 그때 파일 값을 보내준다.
+
+
+ex
+
+
+
+
+1. /
+localhost:8000 -> path : /
+localhost:8000/  -> path : /
+
+
+localhost:8000/abc       -> path : /abc
+localhost:8000/abc.html  -> path : /abc.html
+localhost:8000/abcdef    -> path : /abcdef
+ 
+
+2. /abc
+localhost:8000/abc/         ->path : /abc/
+localhost:8000/abc/abc.html ->path : /abc/abc.html
+localhost:8000/abc/def      ->path : /abc/def
+
+
+3. /abc/def
+localhost:8000/abc/def/         ->path : /abc/def/
+localhost:8000/abc/def/abc.html ->path : /abc/def/abc.html
+
+
+추가 : 
+location 이 / 하나일 경우에는 아마 /abc/def/ ->/ 걸리긴 할건데
+
+
+
+localhost:8000/abc/lmn
+->_path /abc/lmn
+
+1. / : 1개
+
+2. /abc -> /abc/가 포함이 되어있기 때문에, 4개(/abc)
+
+3. /abc/def -> 포함되지 않기 때문에, 0개
+
+가장 유사도가 높은게 2번이기 때문에 2번 블록으로
+
+
+/abc -> root + _path / X
+
+
+----------
+
+localhost:8000/abc/ -> abc 로케이션에 들어가야
+index index.html
+/abc/ -> _path /abc/index.html
+
+localhost:8000/abc -> / 로케이션에 걸리기 때문에
+/abc -> _path /abc
+
+
+
