@@ -83,7 +83,8 @@ int Response::validateRequest(Request& request) {
 		error = getValidate(request);
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
-
+		error = getValidate(request);
+		if (error) return error;
 	} else if (request.getMethod() == "DELETE") {
 
 	}

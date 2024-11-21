@@ -22,8 +22,8 @@ void Request::debug() {
     std::cout << "\n\n\n=== Port ===\n";
     std::cout << this->getServerPort();
 
-    // std::cout << "\n\n\n=== Query ===\n";
-    // std::cout << this->getQuery();
+    std::cout << "\n\n\n=== Query ===\n";
+    std::cout << this->getQuery();
 
     // std::cout << "\n\n\n=== Version ===\n";
     // std::cout << this->getVersion();

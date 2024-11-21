@@ -6,19 +6,12 @@ void Request::setError(int code) {
 
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //1. _path의 마지막 값이 / 인지 아닌지
+    std::cout << _path << " " << _location.getRoot() << std::endl;
     if (_location.getRedirect().empty() == false) {
         _mappingUrl = _location.getRedirect();
     }
     else {
-        // if (_path[_path.length() - 1] == '/') {
-        //     //인덱스가 유효하지 않을 경우 체크
-        //     _mappingUrl = _location.getRoot() + _path + _location.getIndex()[0];
-        // }
-        // else if (_path[_path.length() - 1] != '/') {
-        //     _mappingUrl = _location.getRoot() + _path;
-        //     // std::cout  <<_mappingUrl<<"|"<< _location.getRoot() <<"|"<< _path<<std::endl;
-        // }
-        _mappingUrl = _location.getRoot() + _path;
+        _mappingUrl = setNormalizedPath(_path, _location.getRoot());
     }
 }
 
