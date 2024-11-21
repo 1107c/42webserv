@@ -44,6 +44,8 @@ class ServerBlock
         const std::vector<std::string> &getMethods() const;
         const bool &getAutoindex() const;
         const int &getIsServer() const;
+        
+        void reset();
     };
 
 #endif

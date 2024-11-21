@@ -303,7 +303,7 @@ void Conf::parseConf()
             ++i;
     }
     organizeServerBlocks();
-    printConfig();
+    // printConfig();
 }
 
 void Conf::updateLoc(Location &loc)

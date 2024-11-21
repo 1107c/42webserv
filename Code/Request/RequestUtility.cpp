@@ -10,14 +10,15 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
         _mappingUrl = _location.getRedirect();
     }
     else {
-        if (_path[_path.length() - 1] == '/') {
-            //인덱스가 유효하지 않을 경우 체크
-            _mappingUrl = _location.getRoot() + _path + _location.getIndex()[0];
-        }
-        else if (_path[_path.length() - 1] != '/') {
-            _mappingUrl = _location.getRoot() + _path;
-            // std::cout  <<_mappingUrl<<"|"<< _location.getRoot() <<"|"<< _path<<std::endl;
-        }
+        // if (_path[_path.length() - 1] == '/') {
+        //     //인덱스가 유효하지 않을 경우 체크
+        //     _mappingUrl = _location.getRoot() + _path + _location.getIndex()[0];
+        // }
+        // else if (_path[_path.length() - 1] != '/') {
+        //     _mappingUrl = _location.getRoot() + _path;
+        //     // std::cout  <<_mappingUrl<<"|"<< _location.getRoot() <<"|"<< _path<<std::endl;
+        // }
+        _mappingUrl = _location.getRoot() + _path;
     }
 }
 
@@ -44,4 +45,8 @@ bool Request::validateRequest() {
 
 void Request::setMappingUrl(std::string& path) {
     this->_mappingUrl = path;
+}
+
+void Request::setBody(const std::string& body) {
+    this->_body = body;
 }

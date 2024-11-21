@@ -5,7 +5,10 @@ std::string Response::errorHandler(int error) {
 	std::string path = getErrorPath(error);
 	std::string header = getErrorHeader(error);
 	std::ifstream file(path.c_str());
-	if (!file.is_open()) header = getErrorHeader(500);
+	if (!file.is_open()) {
+        header = getErrorHeader(500);
+        path = getErrorPath(500);
+    }
 	std::string html;
 	std::string line;
 	while (std::getline(file, line)) {
@@ -14,12 +17,14 @@ std::string Response::errorHandler(int error) {
 	std::ostringstream ss;
 	ss << html.size();
 
+    std::cout << path << "\n" << header << std::endl;
 	std::string response = header + "\r\n";
 	response += "Content-Type: text/html; charset=UTF-8\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Connection: close\r\n";
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
 	response += html;
+
 	return response;
 }
 
@@ -109,13 +114,13 @@ std::string Response::postHandler(Request& request) {
 	// std::cout << body << std::endl;
     if (pos == std::string::npos)
 	{		
-    	std::cout<< "@@@@@@"<<std::endl;
+    	std::cout<< "@@@@@@2"<<std::endl;
 		return NULL;
-	} 
+	}
 	boundary = body.substr(0, pos - 2);
 	std::cout <<boundary <<std::endl;
     pos = pos + 2;  
-    	std::cout<< "@@@@@@"<<std::endl;
+    	std::cout<< "@@@@@@3"<<std::endl;
     while (pos < body.length()) {
         size_t lineEnd = body.find("\r\n", pos);
         if (lineEnd == std::string::npos) break; //캐리지 못찾을시
@@ -222,14 +227,14 @@ std::string Response::cgiHandler(const Location& location,const  std::string &ur
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+		std::string fa = "/home/changhyun/42/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
 		// std::cerr <<"@@@@@@@@@@@\n" << request.getMethod();
 
-	// int error = validateRequest(request);
-	// if (error) return errorHandler(error);
+	int error = validateRequest(request);
+	if (error) return errorHandler(error);
 	if (!request.getLocation().getCgi().empty())
 	{
 		

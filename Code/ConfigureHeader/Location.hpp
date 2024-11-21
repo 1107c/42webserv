@@ -25,6 +25,8 @@ class Location : public ServerBlock
         const std::string &getPath() const;
         const std::vector<std::string> &getCgi() const;
         const std::string &getRedirect() const;
+
+        void reset();
 };
 
 #endif

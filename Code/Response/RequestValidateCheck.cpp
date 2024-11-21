@@ -32,25 +32,25 @@ std::string Response::getErrorPath(int error) {
 	std::string path;
 	switch (error) {
 		case 403:
-			path = "../ErrorHtml/403.html";
+			path = "ErrorHtml/403.html";
 			break ;
 		case 404:
-			path = "../ErrorHtml/404.html";
+			path = "ErrorHtml/404.html";
 			break ;
 		case 405:
-			path = "../ErrorHtml/405.html";
+			path = "ErrorHtml/405.html";
 			break ;
 		case 413:
-			path = "../ErrorHtml/413.html";
+			path = "ErrorHtml/413.html";
 			break ;
 		case 500:
-			path = "../ErrorHtml/500.html";
+			path = "ErrorHtml/500.html";
 			break ;
 		case 505:
-			path = "../ErrorHtml/505.html";
+			path = "ErrorHtml/505.html";
 			break ;
 		default:
-			path = "../ErrorHtml/404.html";
+			path = "ErrorHtml/404.html";
 	}
 	return path;
 }

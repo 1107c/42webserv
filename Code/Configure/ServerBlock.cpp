@@ -213,3 +213,17 @@ const int &ServerBlock::getIsServer() const
 {
     return _isServer;
 }
+
+void ServerBlock::reset() {
+    this->_host = "";
+    this->_port = std::vector<unsigned int>();
+    this->_server = std::vector<std::string>();
+    this->_size = 0;
+    this->_root = "";
+    this->_methods = std::vector<std::string>();
+    this->_autoidx = false;
+	this->_index = std::vector<std::string>();
+    this->_error = std::map<std::string, std::string>();
+    this->_isServer = 0;
+    this->_isAuto = 0;
+}

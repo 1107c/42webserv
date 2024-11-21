@@ -82,6 +82,8 @@ class Request {
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
 		void setMappingUrl(std::string& path);
+        void setBody(const std::string& body);
+        void reset(const std::vector<std::vector<Location> > *conf);
 
         //config 파일이랑 연결
         bool getConfigOption();
