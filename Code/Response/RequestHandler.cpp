@@ -231,10 +231,10 @@ std::string Response::RequestHandler(Request& request) {
 		// std::cout <<"@@@@@@@@@@@\n" << request.getLocation().getRedirect() << std::endl;
 	// int error = validateRequest(request);
 	// if (error) return errorHandler(error);
-	if (request.getLocation().getAutoindex() == true)
-    {
-        return (autoIndexHandler(request));
-    }
+	// if (request.getLocation().getAutoindex() == true)
+    // {
+    //     return (autoIndexHandler(request));
+    // }
     if (!request.getLocation().getCgi().empty())
 	{
 		return(cgiHandler(request.getLocation(), request.getMappingUrl()));
