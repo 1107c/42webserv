@@ -242,6 +242,7 @@ bool    Conf::parseLine(std::string::const_iterator &i)
 
     while (*i && !isSpace(i)) {++i;}
     key = std::string(start, i);
+	// std::cout << "key: " << key << std::endl;
     while (*i && isSpace(i)) {++i;}
     if (key.empty())
         return true;
@@ -271,6 +272,7 @@ bool    Conf::parseBlock(std::string::const_iterator &i)
     {
         _block.push_back(Location());
         _back = &_block.back();
+		_back->setServer();
     }
     while (!isFirstLine(i) && *i)
     {

@@ -56,6 +56,7 @@ void Epoll::bindSocket(const std::string &host, const unsigned int &port)
     freeaddrinfo(result);
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
+    std::cout << "addr_sin_port: " << addr.sin_port << "\n";
     if (bind(socket, (sockaddr*)&addr, sizeof(addr)) == -1)
         throw std::runtime_error("socket bind failed");
     if (listen(socket, SOMAXCONN) == -1)

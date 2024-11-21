@@ -1,7 +1,7 @@
 #include "../ConfigureHeader/ServerBlock.hpp"
 
 ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(0),
- _root(""), _methods(), _autoidx(false), _index(), _error(), _isServer(0), _isAuto(0)
+ _root(""), _methods(), _autoidx(false), _index(), _error(), _isServer(true), _isAuto(false)
 {
 }
 
@@ -98,10 +98,10 @@ bool ServerBlock::setClientMaxBodySize(const std::string &value)
 		return false;
     unsigned long size = std::strtoul(value.c_str(), &end, 10);
     if (*end == 'M')
-        size *= 1000 * 1000;
+        size *= 1024 * 1024;
     else if (*end == 'K')
-        size *= 1000;
-    if (size == 0 || size >= MAX_BODY_SIZE || (*end && *(end + 1)))
+        size *= 1024;
+    if (size == 0 || size > MAX_BODY_SIZE || (*end && *(end + 1)))
         return false;
     _size = size;
     return true;
@@ -172,8 +172,7 @@ bool ServerBlock::setAutoindex(const std::string& autoindex)
         _autoidx = true;
     return true;
 }
-const 
-std::string &ServerBlock::getHost() const
+const std::string &ServerBlock::getHost() const
 {
     return _host;
 }
@@ -209,7 +208,7 @@ const bool &ServerBlock::getAutoindex() const
 {
     return _autoidx;
 }
-const int &ServerBlock::getIsServer() const
+const bool &ServerBlock::getIsServer() const
 {
     return _isServer;
 }
