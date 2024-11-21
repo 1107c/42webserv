@@ -1,9 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include<ctime>
 int main() {
-    std::ifstream file("jajo.jpg", std::ios::binary);
+    const char *tmp;
+    if(time(NULL) % 2 == 1)
+        tmp = "jajo.jpg";
+    else
+        tmp = "ksuh.jpg";
+    std::ifstream file(tmp, std::ios::binary);
     if (!file) {
         std::cout << "Content-Type: text/plain\r\n\r\n";
         std::cout << "Error: Cannot open image file";
