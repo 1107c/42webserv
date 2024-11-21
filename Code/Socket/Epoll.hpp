@@ -32,6 +32,8 @@ class Epoll
         void handleWrite(int &fd);
         void handleClose(int &fd);
         void closeFd();
+        void redirect(int &fd);
+
 };
 
 #endif

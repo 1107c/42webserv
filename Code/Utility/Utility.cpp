@@ -1,11 +1,16 @@
 #include "../UtilityHeader/Utility.hpp"
 
 int ft_strncmp(std::string _path, std::string _configPath) {
-    int i = -1;
-    for(i = 0; _path[i] && _configPath[i]; i++) {
-        if (_path[i] != _configPath[i])
-            break;
-    }
+    // int i = -1;
+    // for(i = 0; _path[i] && _configPath[i]; i++) {
+    //     if (_path[i] != _configPath[i])
+    //         break;
+    // }
+	int i= 0;
+	while (_path[i] && _configPath[i] && _configPath[i] == _path[i])
+		++i;
+	if (_path[i])
+		return -1;
     return i;
 }
 

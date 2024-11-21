@@ -27,6 +27,7 @@ class Response {
     std::string removeHandler(Request& request);
 std::string cgiHandler(const Location& location, const std::string &url);
 std::string executeCgi(const char *(&args)[3]);
+    std::string autoIndexHandler(Request& request);
 
 
         int validateRequest(Request& request);

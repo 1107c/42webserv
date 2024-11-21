@@ -187,17 +187,19 @@ std::string Response::removeHandler(Request& request)
 {
     std::string filepath = request.getMappingUrl();
     
+
+
+    remove(request.getMappingUrl().c_str());
 	// std::cout <<"path" << filepath << std::endl;
 	// filepath= '.' + filepath;
-    int fd = open(filepath.c_str(), O_WRONLY | O_TRUNC);
-    if (fd == -1) {
-		std::cout << "@@@@@"<<std::endl;
-        return NULL;
-    }
+    // int fd = open(filepath.c_str(), O_WRONLY | O_TRUNC);
+    // if (fd == -1) {
+	// 	std::cout << "@@@@@"<<std::endl;
+    //     return NULL;
+    // }
 
     // 파일을 닫음 (이미 O_TRUNC로 내용이 비워짐)
-    close(fd);
-
+    // close(fd);
     return textHandler(request, request.getAccept());
 }
 
@@ -215,7 +217,7 @@ std::string Response::cgiHandler(const Location& location,const  std::string &ur
 		execZero.c_str(),
 		execOne.c_str(),
 		NULL
-	};
+	};  
 	return executeCgi(args);
 }
 
@@ -226,13 +228,15 @@ std::string Response::RequestHandler(Request& request) {
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
-		// std::cerr <<"@@@@@@@@@@@\n" << request.getMethod();
-
+		// std::cout <<"@@@@@@@@@@@\n" << request.getLocation().getRedirect() << std::endl;
 	// int error = validateRequest(request);
 	// if (error) return errorHandler(error);
-	if (!request.getLocation().getCgi().empty())
+	if (request.getLocation().getAutoindex() == true)
+    {
+        return (autoIndexHandler(request));
+    }
+    if (!request.getLocation().getCgi().empty())
 	{
-		
 		return(cgiHandler(request.getLocation(), request.getMappingUrl()));
 	}
 	if (request.getMethod() == "GET") {
