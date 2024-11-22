@@ -28,18 +28,52 @@ std::string Response::errorHandler(int error) {
 	return response;
 }
 
-std::string autoIndexHeader(const std::string& body) {
-    std::string header;
-    
+std::string Response::autoIndexFile(const Request& request) {
+    size_t pos = request.getMappingUrl().rfind("/");
+    std::string filename = request.getMappingUrl().substr(pos + 1);
+    std::ifstream file(request.getMappingUrl().c_str(), std::ios::binary);
+    if (!file.is_open()) return errorHandler(500);
+    file.seekg(0, std::ios::end);
+    size_t size = file.tellg();
+    file.seekg(0);
+    std::string response;
+
+    response += "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n";
+    response += "Content-Disposition: attachment; filename=\"" + filename + "\"\r\n";
+    response += "Content-Length: " + ToString(size) + "\r\n";
+    response += "Connection: keep-alive\r\n";
+    response += getGMTDate() + "\r\n\r\n";
+
+    response.reserve(response.size() + size);
+
+    // 버퍼에 파일 내용 읽기
+	const size_t buffer_size = 8192;
+    std::vector<char> buffer(buffer_size);
+    size_t bytes_read = 0;
+	size_t remaining = size;
+	while (remaining) {
+		remaining -= bytes_read;
+		size_t read_size = std::min(remaining, buffer_size);
+		file.read(&buffer[0], read_size);
+		bytes_read = file.gcount();
+		// 이미지 데이터 추가
+		response.append(&buffer[0], bytes_read);
+	}
+
+    return response;
 }
 
-std::string Response::autoIndexHandler(const std::string& mapPath, const std::string& path) {
-    DIR* dir = opendir(mapPath.c_str());
-    if (!dir) {
-        return errorHandler(500);
-    }
-
+std::string Response::autoIndexHandler(const Request& request) {
+    std::string mapPath = request.getMappingUrl();
+    DIR* dir = NULL;
+    if (isDirectory(mapPath)) {
+        dir = opendir(mapPath.c_str());
+        if (!dir) {
+            return errorHandler(500);
+        }
+    } else if (!isDirectory(mapPath) && request.getLocation().getAutoindex()) return autoIndexFile(request);
     std::string result;
+    std::string path = request.getPath();
     struct dirent* entry;
     while ((entry = readdir(dir))) {
         if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue ;
@@ -71,7 +105,6 @@ std::string Response::autoIndexHandler(const std::string& mapPath, const std::st
 }
 std::string Response::redirectHandler(const std::string &mapPath, const std::string &code)
 {
-
     std::string ss = code + " Moved Permanently";
     std:: string response = "HTTP/1.1 " + code + " Moved Permanently\r\n";
     response += "Content-Type: text/html\r\n";
@@ -81,26 +114,26 @@ std::string Response::redirectHandler(const std::string &mapPath, const std::str
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
     response += ss;
     return response;
-
 }
 
 
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
     std::string html;
-    bool autoindex = false;
+
 	if (isDirectory(mapPath)) {
-        html = autoIndexHandler(mapPath, request.getPath());
-        autoindex = true;
-    }
-    if (!autoindex) {
+        html = autoIndexHandler(request);
+    } else if (request.getLocation().getAutoindex()) {
+        return autoIndexHandler(request);
+    } else {
         std::ifstream file(request.getMappingUrl().c_str());
         if (!file.is_open()) return errorHandler(500);
-        std::string line;
+            std::string line;
         while (std::getline(file, line)) {
             html += line + "\n";
         }
     }
+    
     std::ostringstream ss;
     ss << html.size();
     
@@ -109,6 +142,7 @@ std::string Response::textHandler(const Request& request, const std::string& acc
     response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
     response += html;
+
     return response;
 }
 
@@ -286,9 +320,9 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
     close(fd[0]);
     if (cgiArgv[0] == "/usr/bin/python3")
     {
-        size_t pos = 0;
-        if (pos != response.find("Traceback"))
+        if (response.empty()) {
             return errorHandler(500);
+        }
     }
 
     int status;
