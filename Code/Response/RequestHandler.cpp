@@ -123,7 +123,7 @@ std::string Response::textHandler(const Request& request, const std::string& acc
 
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(request);
-    } else if (request.getLocation().getAutoindex()) {
+    } else if (mapPath.find(".html") == std::string::npos && request.getLocation().getAutoindex()) {
         return autoIndexHandler(request);
     } else {
         std::ifstream file(request.getMappingUrl().c_str());
