@@ -24,7 +24,7 @@ class Response {
         std::string imageHandler(const Request& request, const std::string& accept);
         std::string errorHandler(int error);
         std::string    postHandler(Request& request);
-    std::string autoIndexHandler(Request& request);
+        std::string autoIndexHandler(const std::string& path);
         std::string removeHandler(Request& request);
         std::string cgiHandler(Request& request);
         std::string executeCgi(const std::vector<std::string>& cgiArgv);

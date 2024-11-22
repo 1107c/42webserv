@@ -47,6 +47,7 @@ std::string setNormalizedPath(const std::string& _path, const std::string& _root
 		if (path[path.length() - 1] != '/')
 			path += '/';
 	}
+	std::cout << "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n" << path << std::endl;
 	return path;
 }
 

@@ -28,10 +28,40 @@ std::string Response::errorHandler(int error) {
 	return response;
 }
 
+std::string Response::autoIndexHandler(const std::string& path) {
+    DIR* dir = opendir(path.c_str());
+    if (!dir) {
+        return errorHandler(500);
+    }
+
+    std::string result;
+    struct dirent* entry;
+    while ((entry = readdir(dir))) {
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue ;
+
+        std::string _path = path + "/" + entry->d_name;
+
+        struct stat file_info;
+        if (!stat(_path.c_str(), &file_info)) {
+            char time_str[100];
+            struct tm* tm_info = localtime(&file_info.st_mtime);
+            strftime(time_str, sizeof(time_str), "%Y년 %m월 %d일 %H시 %M분 %S초", tm_info);
+            result += entry->d_name;
+            result += " ";
+            result += time_str;
+            result += "\n";
+        } else {
+            return errorHandler(500);
+        }
+    }
+    closedir(dir);
+    return result;
+}
+
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string path = request.getMappingUrl();
 	if (isDirectory(path)) {
-		// path =                                << cgi를 이용해서 autoindex 처리할것
+		return autoIndexHandler(path);
 	}
 	std::ifstream file(request.getMappingUrl().c_str());
 	if (!file.is_open()) return errorHandler(500);
@@ -267,6 +297,7 @@ std::string Response::RequestHandler(Request& request) {
 	}
 
 	int error = validateRequest(request);
+    std::cout << "##################### error " << error << std::endl;
 	if (error) return errorHandler(error);
 	if (!request.getLocation().getCgi().empty())
 	{

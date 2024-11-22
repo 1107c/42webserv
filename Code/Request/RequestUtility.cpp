@@ -8,11 +8,13 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //1. _path의 마지막 값이 / 인지 아닌지
     std::cout << "#######\n" << _path << " " << "$$$$$$$$$$$\n" << _location.getRoot() << std::endl;
     if (_location.getRedirect().empty() == false) {
+        std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n";
         _mappingUrl = _location.getRedirect();
     }
     else {
-        std::cout << "12321321\n";
+        std::cout <<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n";
         _mappingUrl = setNormalizedPath(_path, _location.getRoot());
+        std::cout << "_mappingUrl : " << _mappingUrl << std::endl;
     }
 }
 

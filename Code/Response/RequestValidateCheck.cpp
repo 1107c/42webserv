@@ -62,8 +62,10 @@ int Response::getValidate(Request& request) {
 	const std::vector<std::string>& index = request.getLocation().getIndex();
 	for (size_t i = 0; i < index.size(); ++i) {
 		std::string temp =  path + index[i];
+		std::cout << "temp ? " << temp << std::endl;
 		int errorTemp = checkPermissions(temp.c_str());
 		if (!errorTemp) {
+			std::cout << "temperoror ? " << errorTemp << std::endl;
 			request.setMappingUrl(temp);
 			return 0;
 		} else if (!error && errorTemp) error = errorTemp;
@@ -82,6 +84,7 @@ int Response::validateRequest(Request& request) {
 	if (error) return error;
 	if (request.getMethod() == "GET" && isDirectory(path.c_str())) {
 		error = getValidate(request);
+		std::cout << "OOOOOOOOOOOOOOOOOOOOOO " << error << std::endl;
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
 		error = getValidate(request);
