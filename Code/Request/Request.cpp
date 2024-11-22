@@ -31,7 +31,7 @@ bool Request::requestHandler(const std::string& rawRequest) {
     }
     _isParsed = true;
     normalizedPath();
-    debug();
+    // debug();
     return true;
 }
 

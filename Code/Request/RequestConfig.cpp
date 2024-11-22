@@ -39,45 +39,32 @@ bool Request::getConfigOption() {
     if ((*_conf)[serverBlockIdx].size() == 1) {
         _location = (*_conf)[serverBlockIdx][0];
     } else {
-        int locationIdx = 0;
-        //로케이션 블록이 있을 경우
-        if (_path == "/") {
-            for(size_t i = 1; i < (*_conf)[serverBlockIdx].size(); i++) {
-                //_path와 .getPath()의 값이 얼마만큼 같냐
-                if (_path == (*_conf)[serverBlockIdx][i].getPath()) {
-                    // if (!(*_conf)[serverBlockIdx][i].getRedirect().empty())
-                    locationIdx = i;
-                    break;
-                }
-            }
-        } else {
-            locationIdx = getLocationBlock(serverBlockIdx);
-        }
-        _location = (*_conf)[serverBlockIdx][locationIdx];
+        _location = (*_conf)[serverBlockIdx][getLocationBlock(serverBlockIdx)];
     }
     return true;
 }
 
 int Request::getLocationBlock(int& serverBlockIdx) {
-    int max = -1;
-    ssize_t index = 0;
 
-    std::string str = _path;
-    size_t pos = str.rfind('/');
-    if (pos != std::string::npos) {
-        str.erase(pos + 1);
-    }
+    std::string file,str = _path;
+    size_t pos ;
 
-    for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {
-        int length = (*_conf)[serverBlockIdx][locationIdx].getPath().length();
-        if (strncmp(str.c_str(), (*_conf)[serverBlockIdx][locationIdx].getPath().c_str(), length) == 0)
+    while (1)
+    {
+        if (str[str.size() - 1] == '/')
         {
-            if (max < length) {
-                max = length;
-                index = locationIdx;
+            str.erase(str.size() - 1);
+            for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {   
+                if (str == (*_conf)[serverBlockIdx][locationIdx].getPath())
+                    return locationIdx;
             }
+
         }
+        pos = str.rfind('/');
+        if(pos == std::string::npos)
+            break;
+        file = str.substr(pos + 1);
+        str = str.substr(0,pos + 1);
     }
-    
-    return index;
+    return 0;
 }

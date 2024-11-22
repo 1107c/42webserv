@@ -155,10 +155,13 @@ void Epoll::handleRead(int &fd)
                 currentLeng = _result[fd].substr(pos + 4).length();
             else
                 currentLeng += bytesRead;
-            // std::cout << "Here: " << request.getPath() << std::endl;
-            // std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
-            // std::cout << "Error code : " << request.getErrorCode() << std::endl;
-            // std::cout << "leng" <<request.getContentLength() <<std::endl;
+            std::cout <<"----------------------------------\n";
+            std::cout << "path: " << request.getPath() << std::endl;
+            std::cout << "root : " << request.getLocation().getRoot()<< std::endl;
+            std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
+            std::cout <<"----------------------------------\n";
+            
+            // std::cout << "leng" <<request.getContentLe   ngth() <<std::endl;
             if (!conLeng || conLeng == currentLeng) {
                 request.setBody(_result[fd].substr(pos + 4));
                 Response response;
