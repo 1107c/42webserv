@@ -28,6 +28,11 @@ std::string Response::errorHandler(int error) {
 	return response;
 }
 
+std::string autoIndexHeader(const std::string& body) {
+    std::string header;
+    
+}
+
 std::string Response::autoIndexHandler(const std::string& mapPath, const std::string& path) {
     DIR* dir = opendir(mapPath.c_str());
     if (!dir) {
@@ -47,20 +52,16 @@ std::string Response::autoIndexHandler(const std::string& mapPath, const std::st
         std::string _path = path + filename;
         std::string _mapPath = mapPath + filename;
 
+        filename = entry->d_name;
         struct stat file_info;
         if (!stat(_mapPath.c_str(), &file_info)) {
             char time_str[100];
             struct tm* tm_info = localtime(&file_info.st_mtime);
             strftime(time_str, sizeof(time_str), "%Y년 %m월 %d일 %H시 %M분 %S초", tm_info);
-            result += "<a href=\"";
-            result += _path;
+            result += "<a href=\"" + _path;
             if (isDirectory(_path))
                 result += "/";
-            result += "\">";
-            result += entry->d_name;
-            result += "</a> ";
-            result += time_str;
-            result += "\n";
+            result += "\">" + filename + "</a> " + time_str + "\n";
         } else {
             return errorHandler(500);
         }
@@ -72,10 +73,12 @@ std::string Response::autoIndexHandler(const std::string& mapPath, const std::st
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
     std::string html;
+    bool autoindex = false;
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(mapPath, request.getPath());
+        autoindex = true;
     }
-    if (html.empty()) {
+    if (!autoindex) {
         std::ifstream file(request.getMappingUrl().c_str());
         if (!file.is_open()) return errorHandler(500);
         std::string line;
