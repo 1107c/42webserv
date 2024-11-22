@@ -1,0 +1,20 @@
+{
+    "users": [
+        {
+            "id": "er",
+            "salt": "fb2afce4e2337dd5a7b5cdb397283db7",
+            "password": "9ed792a51aa302ced9b6ab06952d59854985e461607dea0e85e622214509daa1"
+        },
+        {
+            "id": "err",
+            "salt": "ab8d31cf20e65f8d1ef40414a682b5d8",
+            "password": "e371c1089d078c18145d842bd15028b16f7b526e59fb9f53330ab4495e0dda1d"
+        },
+        {
+            "id": "ee",
+            "salt": "2e24e85073e3ac27dd8e5be280fc3da2",
+            "password": "2d9c9f2ab37a930d565c32ac7f31b8f51d2cfa097c141d33e2ec2159c59d8db6"
+        }
+    ],
+    "sessions": []
+}

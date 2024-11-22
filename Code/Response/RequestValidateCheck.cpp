@@ -75,6 +75,7 @@ int Response::getValidate(Request& request) {
 
 int Response::validateRequest(Request& request) {
 	std::string path = request.getMappingUrl();
+	std::cout << "######################3\n" << path << std::endl;
 	std::string version = request.getVersion();
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") return 505;
 	int error = checkPermissions(path.c_str());

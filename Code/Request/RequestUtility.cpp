@@ -6,7 +6,7 @@ void Request::setError(int code) {
 
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //1. _path의 마지막 값이 / 인지 아닌지
-    std::cout << _path << " " << _location.getRoot() << std::endl;
+    std::cout << "#######\n" << _path << " " << "$$$$$$$$$$$\n" << _location.getRoot() << std::endl;
     if (_location.getRedirect().empty() == false) {
         _mappingUrl = _location.getRedirect();
     }

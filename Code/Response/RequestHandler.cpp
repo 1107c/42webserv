@@ -93,25 +93,12 @@ std::string Response::postHandler(Request& request) {
     const std::string& body = request.getBody();
     std::string boundary;
     
-    // Content-Type 헤더에서 boundary 추출
-
-    // size_t boundaryPos = request.getHeader("Content-Type").find("boundary=");
-    // if (boundaryPos != std::string::npos) {
-    //     boundary = request.getHeader("Content-Type").substr(boundaryPos + 9);
-    // }
-    // if (boundary.empty()) {
-    //     return NULL;
-    // }
     size_t pos = 0;
     std::string filename;
     std::string contentType;
     std::string fileData;
 
-    // 첫 번째 boundary 찾기
-
-	// boundaryPos = body.find("boundary=");
     pos = body.find("\r\n", pos);
-	// std::cout << body << std::endl;
     if (pos == std::string::npos)
 	{		
     	std::cout<< "@@@@@@2"<<std::endl;
@@ -184,7 +171,6 @@ std::string Response::postHandler(Request& request) {
 	outFile.write(fileData.c_str(), fileData.length());
 	outFile.close();
     
-    // std::cout << "Successfully saved file: " << filepath << std::endl;
     return textHandler(request, request.getAccept());
 }
 
@@ -273,19 +259,18 @@ std::string Response::cgiHandler(Request& request)
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/changhyun/42/42webserv/Code/html/image/favi.ico";
+		std::string fa = "/home/changhyu/st/cursus5/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
-		// std::cerr <<"@@@@@@@@@@@\n" << request.getMethod();
 
 	int error = validateRequest(request);
 	if (error) return errorHandler(error);
 	if (!request.getLocation().getCgi().empty())
 	{
-        std::string tee = cgiHandler(request);
-        return tee;
-		// return(cgiHandler(request));
+        // std::string tee = cgiHandler(request);
+        // return tee;
+		return(cgiHandler(request));
 	}
 	if (request.getMethod() == "GET") {
 		std::string accept = request.getAccept();
@@ -298,18 +283,6 @@ std::string Response::RequestHandler(Request& request) {
 		}
 	} else if (request.getMethod() == "POST") {
 		return postHandler(request);
-		// std::string type = request.getContentType();
-		// if (type == "application/x-www-form-urlencoded") {
-
-		// } else if (type == "application/json") {
-
-		// } else if (type == "multipart/form-data") {
-
-
-		// } else if (type == "application/octet-stream") {
-		// } else if (type == "text/plain") {
-
-		// }
 	} else if (request.getMethod() == "DELETE") {
 		return removeHandler(request);
 
