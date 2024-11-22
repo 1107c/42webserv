@@ -69,6 +69,21 @@ std::string Response::autoIndexHandler(const std::string& mapPath, const std::st
     closedir(dir);
     return result;
 }
+std::string Response::redirectHandler(const std::string &mapPath, const std::string &code)
+{
+
+    std::string ss = code + " Moved Permanently";
+    std:: string response = "HTTP/1.1 " + code + " Moved Permanently\r\n";
+    response += "Content-Type: text/html\r\n";
+    response += "Content-Length: " + ToString(ss.size()) + "\r\n";
+    response += "Location: " + mapPath + "\r\n";
+    response += "Connection: keep-alive\r\n";
+	response += "Date: " + getGMTDate() + "\r\n\r\n";
+    response += ss;
+    return response;
+
+}
+
 
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
@@ -148,7 +163,7 @@ std::string Response::postHandler(Request& request) {
     if (pos == std::string::npos)
 	{		
     	std::cout<< "@@@@@@2"<<std::endl;
-		return NULL;
+		return errorHandler(500);
 	}
 	boundary = body.substr(0, pos - 2);
 	std::cout <<boundary <<std::endl;
@@ -187,13 +202,13 @@ std::string Response::postHandler(Request& request) {
     }
 	std::cout<< "&&&&&&&&&&&&&"<<std::endl;
     if (filename.empty() || fileData.empty()) {
-        return NULL;
+        return errorHandler(500);
     }
 	std::cout<< "||||||||||||||||"<<std::endl;
 
 	if (access("uploaded", F_OK | W_OK) == -1) {  
 		std::cerr << "Directory 'uploaded' does not exist or is not writable" << std::endl;
-		return NULL;
+		return errorHandler(500);
 	}
 
 	std::string filepath = "uploaded/uploaded_" + filename;
@@ -212,7 +227,7 @@ std::string Response::postHandler(Request& request) {
 	std::ofstream outFile(filepath.c_str(), std::ios::binary);
 	if (!outFile.is_open()) {
 		std::cerr << "Failed to open file: " << filepath << std::endl;
-		return NULL;
+		return errorHandler(500);
 	}
 	outFile.write(fileData.c_str(), fileData.length());
 	outFile.close();
@@ -233,13 +248,13 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
     int fd[2];
     pid_t pid;
     if (pipe(fd) == -1)
-        throw std::runtime_error("Failed to pipe");
+        return errorHandler(500);
     pid = fork();
     if (pid == -1)
     {
         close (fd[0]);
         close (fd[1]);
-        throw std::runtime_error("Failed to fork");
+        return errorHandler(500);
     }
     if (pid == 0)
     {
@@ -247,7 +262,7 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
         if (dup2(fd[1], 1) == -1)
         {
             close (fd[1]);
-            throw std::runtime_error("Failed to fork");
+            return errorHandler(500);
         }
         close (fd[1]);
         std::vector<const char*> argv;
@@ -256,7 +271,7 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
         }
         argv.push_back(NULL);
         if (execve(argv[0], (char *const *)&argv[0], NULL) == -1)
-            throw std::runtime_error("Failed to exec");
+            return errorHandler(500);
     }
     close(fd[1]);
 
@@ -269,6 +284,12 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
         response.append(buffer, bytes);
     }
     close(fd[0]);
+    if (cgiArgv[0] == "/usr/bin/python3")
+    {
+        size_t pos = 0;
+        if (pos != response.find("Traceback"))
+            return errorHandler(500);
+    }
 
     int status;
     waitpid(pid, &status, 0);
@@ -299,10 +320,19 @@ std::string Response::RequestHandler(Request& request) {
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
-
+    if (!request.getLocation().getRedirect().empty())
+    {
+        return redirectHandler(request.getLocation().getRedirect() , "302");
+    }
+    std::string mapPath = request.getMappingUrl(); 
+    if (isDirectory(mapPath)) {
+        if (mapPath[mapPath.size() - 1] != '/')
+            return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
+    }
 	int error = validateRequest(request);
 	if (error) return errorHandler(error);
-    std::cout << request.getMappingUrl() << std::endl;
+
+
 	if (!request.getLocation().getCgi().empty())
 	{
 		return(cgiHandler(request));

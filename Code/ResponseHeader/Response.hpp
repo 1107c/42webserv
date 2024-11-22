@@ -29,6 +29,7 @@ class Response {
         std::string removeHandler(Request& request);
         std::string cgiHandler(Request& request);
         std::string executeCgi(const std::vector<std::string>& cgiArgv);
+        std::string redirectHandler(const std::string &mapPath, const std::string &code);
 
 
         int validateRequest(Request& request);
