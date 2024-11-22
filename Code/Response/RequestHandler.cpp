@@ -28,8 +28,8 @@ std::string Response::errorHandler(int error) {
 	return response;
 }
 
-std::string Response::autoIndexHandler(const std::string& path) {
-    DIR* dir = opendir(path.c_str());
+std::string Response::autoIndexHandler(const std::string& mapPath, const std::string& path) {
+    DIR* dir = opendir(mapPath.c_str());
     if (!dir) {
         return errorHandler(500);
     }
@@ -40,14 +40,20 @@ std::string Response::autoIndexHandler(const std::string& path) {
         if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue ;
 
         std::string _path = path + "/" + entry->d_name;
+        std::string _mapPath = mapPath + "/" + entry->d_name;
 
         struct stat file_info;
-        if (!stat(_path.c_str(), &file_info)) {
+        if (!stat(_mapPath.c_str(), &file_info)) {
             char time_str[100];
             struct tm* tm_info = localtime(&file_info.st_mtime);
             strftime(time_str, sizeof(time_str), "%Y년 %m월 %d일 %H시 %M분 %S초", tm_info);
+            result += "<a href=\"";
+            result += _path;
+            if (isDirectory(_path))
+                result += "/";
+            result += "\">";
             result += entry->d_name;
-            result += " ";
+            result += "</a> ";
             result += time_str;
             result += "\n";
         } else {
@@ -59,22 +65,24 @@ std::string Response::autoIndexHandler(const std::string& path) {
 }
 
 std::string Response::textHandler(const Request& request, const std::string& accept) {
-	std::string path = request.getMappingUrl();
-	if (isDirectory(path)) {
-		return autoIndexHandler(path);
-	}
-	std::ifstream file(request.getMappingUrl().c_str());
-	if (!file.is_open()) return errorHandler(500);
+	std::string mapPath = request.getMappingUrl();
     std::string html;
-    std::string line;
-    while (std::getline(file, line)) {
-        html += line + "\n";
+	if (isDirectory(mapPath)) {
+        html = autoIndexHandler(mapPath, request.getPath());
+    }
+    if (html.empty()) {
+        std::ifstream file(request.getMappingUrl().c_str());
+        if (!file.is_open()) return errorHandler(500);
+        std::string line;
+        while (std::getline(file, line)) {
+            html += line + "\n";
+        }
     }
     std::ostringstream ss;
     ss << html.size();
     
     std::string response = "HTTP/1.1 200 OK\r\n";
-    response += "Content-Type: " + accept + "\r\n";
+    response += "Content-Type: " + accept + "; charset=UTF-8\r\n";
     response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
     response += html;
@@ -208,19 +216,7 @@ std::string Response::removeHandler(Request& request)
 {
     std::string filepath = request.getMappingUrl();
     
-
-
     remove(request.getMappingUrl().c_str());
-	// std::cout <<"path" << filepath << std::endl;
-	// filepath= '.' + filepath;
-    // int fd = open(filepath.c_str(), O_WRONLY | O_TRUNC);
-    // if (fd == -1) {
-	// 	std::cout << "@@@@@"<<std::endl;
-    //     return NULL;
-    // }
-
-    // 파일을 닫음 (이미 O_TRUNC로 내용이 비워짐)
-    // close(fd);
     return textHandler(request, request.getAccept());
 }
 
@@ -290,19 +286,17 @@ std::string Response::cgiHandler(Request& request)
 }
 
 std::string Response::RequestHandler(Request& request) {
-	// if (request.getPath().find(".ico") != std::string::npos) {
-	// 	std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
-	// 	request.setMappingUrl(fa);
-	// 	return imageHandler(request, "image/x-icon");
-	// }
+	if (request.getPath().find(".ico") != std::string::npos) {
+		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+		request.setMappingUrl(fa);
+		return imageHandler(request, "image/x-icon");
+	}
 
 	int error = validateRequest(request);
-    std::cout << "##################### error " << error << std::endl;
 	if (error) return errorHandler(error);
+    std::cout << request.getMappingUrl() << std::endl;
 	if (!request.getLocation().getCgi().empty())
 	{
-        // std::string tee = cgiHandler(request);
-        // return tee;
 		return(cgiHandler(request));
 	}
 	if (request.getMethod() == "GET") {

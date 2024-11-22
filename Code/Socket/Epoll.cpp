@@ -146,7 +146,7 @@ void Epoll::handleRead(int &fd)
         size_t pos = _result[fd].find("\r\n\r\n");
         if (_result[fd].size() >= 4 && pos != std::string::npos) {
             std::cout << "=== Request Message ===\n";
-            // std::cout << _result[fd] << std::endl;
+            std::cout << _result[fd] << std::endl;
             if (!conLeng) {
                 request.requestHandler(_result[fd]);
                 conLeng = request.getContentLength();

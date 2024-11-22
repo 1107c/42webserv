@@ -45,26 +45,26 @@ bool Request::getConfigOption() {
 }
 
 int Request::getLocationBlock(int& serverBlockIdx) {
+    size_t size = 0;
+    size_t pos = _path.rfind('/');
+    std::string temp = _path;
+    while (pos != std::string::npos) {
+        size++;
+        temp = temp.substr(0, pos);
+        pos = temp.find('/');
+    }
 
-    std::string file,str = _path;
-    size_t pos ;
-
-    while (1)
-    {
-        if (str[str.size() - 1] == '/')
-        {
-            str.erase(str.size() - 1);
-            for(size_t locationIdx = 1; locationIdx < (*_conf)[serverBlockIdx].size(); locationIdx++) {   
-                if (str == (*_conf)[serverBlockIdx][locationIdx].getPath())
-                    return locationIdx;
-            }
-
+    std::string str = _path;
+    for (size_t i = 0; i <= size; ++i) {
+        for (size_t j = 0; j < (*_conf)[serverBlockIdx].size(); ++j) {
+            if ((*_conf)[serverBlockIdx][j].getPath() == str)
+                return j;
         }
         pos = str.rfind('/');
-        if(pos == std::string::npos)
-            break;
-        file = str.substr(pos + 1);
-        str = str.substr(0,pos + 1);
+        if (i + 1 != size)
+            str = str.substr(0, pos);
+        else
+            str = "/";
     }
     return 0;
 }
