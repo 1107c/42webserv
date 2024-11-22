@@ -123,8 +123,11 @@ std::string Response::textHandler(const Request& request, const std::string& acc
 
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(request);
-    } else if (mapPath.find(".html") == std::string::npos && request.getLocation().getAutoindex()) {
+    } else if (checkDownload(mapPath) && request.getLocation().getAutoindex()) {
         return autoIndexHandler(request);
+    } else if (!checkDownload(mapPath) && request.getLocation().getAutoindex()) {
+        std::string _accept = reGetAccept(mapPath.substr(mapPath.find(".") + 1));
+        return imageHandler(request, _accept);
     } else {
         std::ifstream file(request.getMappingUrl().c_str());
         if (!file.is_open()) return errorHandler(500);

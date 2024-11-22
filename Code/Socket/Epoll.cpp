@@ -205,7 +205,9 @@ void Epoll::handleWrite(int &fd)
         _pendingResponses[fd] = this->responseMessage;
 
         std::cout << "=== response === \n";
+        std::string restemp = responseMessage.substr(0, responseMessage.find("\r\n\r\n"));
         // std::cout << this->responseMessage << std::endl;
+        std::cout << restemp << std::endl;
 
     }
     size_t to_send = std::min(_pendingResponses[fd].size(), static_cast<size_t>(5));

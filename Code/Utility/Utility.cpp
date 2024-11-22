@@ -86,3 +86,34 @@ std::string createContentLength(const std::string& str) {
 	std::string result = "Content-Length: " + ToString(size) + "\r\n";
 	return result;
 }
+
+bool checkDownload(const std::string& path) {
+	size_t pos = path.find(".");
+	if (pos == std::string::npos) return true;
+	std::string temp = path.substr(pos + 1);
+	std::vector<std::string> check;
+	check.push_back("exe");
+	check.push_back("bin");
+	check.push_back("pdf");
+	check.push_back("zip");
+	for (size_t i = 0; i < 4; ++i) {
+		if (temp == check[i]) return true;
+	}
+	return false;
+}
+
+std::string reGetAccept(const std::string& type) {
+	std::map<std::string, std::string> map;
+	map["html"] = "text/html";
+	map["htm"] = "text/html";
+	map["css"] = "text/css";
+	map["json"] = "application/json";
+	map["jpeg"] = "image/jpeg";
+	map["jpg"] = "image/jpeg";
+	map["png"] = "image/png";
+
+	std::map<std::string, std::string>::iterator it = map.find(type);
+	if (it != map.end())
+		return it->second;
+	return "text/plain";
+}

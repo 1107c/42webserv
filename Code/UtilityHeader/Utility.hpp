@@ -6,6 +6,7 @@
 # include <stddef.h>
 # include <unistd.h>
 # include <vector>
+# include <map>
 # include <sys/stat.h>
 
 template <typename T>
@@ -22,5 +23,7 @@ std::string getGMTDate();
 int ft_strncmp(std::string _path, std::string _configPath);
 void getArgv(std::vector<std::string>& argv, const std::string& str);
 std::string createContentLength(const std::string& str);
+bool checkDownload(const std::string& path);
+std::string reGetAccept(const std::string& type);
 
 #endif
