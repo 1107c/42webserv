@@ -6,10 +6,10 @@ void Request::setError(int code) {
 
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //1. _path의 마지막 값이 / 인지 아닌지
-    if (_location.getRedirect().empty() == false) {
-        _mappingUrl = _location.getRedirect();
-    }
-    else {
+    // if (_location.getRedirect().empty() == false) {
+    //     _mappingUrl = _location.getRedirect();
+    // }
+    {
         std::string temp;
 
         for (size_t i = 0, j = 0; i < _path.size(); ++i) {
