@@ -290,11 +290,11 @@ std::string Response::cgiHandler(Request& request)
 }
 
 std::string Response::RequestHandler(Request& request) {
-	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/changhyu/st/cursus5/42webserv/Code/html/image/favi.ico";
-		request.setMappingUrl(fa);
-		return imageHandler(request, "image/x-icon");
-	}
+	// if (request.getPath().find(".ico") != std::string::npos) {
+	// 	std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+	// 	request.setMappingUrl(fa);
+	// 	return imageHandler(request, "image/x-icon");
+	// }
 
 	int error = validateRequest(request);
     std::cout << "##################### error " << error << std::endl;
