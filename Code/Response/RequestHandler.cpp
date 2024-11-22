@@ -39,8 +39,13 @@ std::string Response::autoIndexHandler(const std::string& mapPath, const std::st
     while ((entry = readdir(dir))) {
         if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue ;
 
-        std::string _path = path + "/" + entry->d_name;
-        std::string _mapPath = mapPath + "/" + entry->d_name;
+        std::string filename;
+        if (path[path.size() - 1] != '/') {
+            filename += '/';
+        }
+        filename += entry->d_name;
+        std::string _path = path + filename;
+        std::string _mapPath = mapPath + filename;
 
         struct stat file_info;
         if (!stat(_mapPath.c_str(), &file_info)) {
