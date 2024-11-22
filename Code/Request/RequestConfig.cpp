@@ -35,11 +35,8 @@ bool Request::getConfigOption() {
         return false;
     }
 
-
-    int locationIdx = -1;
     //로케이션 블록이 없을 경우
     if ((*_conf)[serverBlockIdx].size() == 1) {
-        locationIdx = 0;
         _location = (*_conf)[serverBlockIdx][0];
     } else {
         int locationIdx = 0;

@@ -9,5 +9,6 @@ html = f"""<html>
     <p>Current Time: {current_time}</p>
 </body>
 </html>"""
+header = f"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(html)}\r\n\r\n"""
 
-print(html)
+print(header + html)

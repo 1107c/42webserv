@@ -5,7 +5,10 @@ std::string Response::errorHandler(int error) {
 	std::string path = getErrorPath(error);
 	std::string header = getErrorHeader(error);
 	std::ifstream file(path.c_str());
-	if (!file.is_open()) header = getErrorHeader(500);
+	if (!file.is_open()) {
+        header = getErrorHeader(500);
+        path = getErrorPath(500);
+    }
 	std::string html;
 	std::string line;
 	while (std::getline(file, line)) {
@@ -14,12 +17,14 @@ std::string Response::errorHandler(int error) {
 	std::ostringstream ss;
 	ss << html.size();
 
+    std::cout << path << "\n" << header << std::endl;
 	std::string response = header + "\r\n";
 	response += "Content-Type: text/html; charset=UTF-8\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Connection: close\r\n";
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
 	response += html;
+
 	return response;
 }
 
@@ -88,34 +93,21 @@ std::string Response::postHandler(Request& request) {
     const std::string& body = request.getBody();
     std::string boundary;
     
-    // Content-Type 헤더에서 boundary 추출
-
-    // size_t boundaryPos = request.getHeader("Content-Type").find("boundary=");
-    // if (boundaryPos != std::string::npos) {
-    //     boundary = request.getHeader("Content-Type").substr(boundaryPos + 9);
-    // }
-    // if (boundary.empty()) {
-    //     return NULL;
-    // }
     size_t pos = 0;
     std::string filename;
     std::string contentType;
     std::string fileData;
 
-    // 첫 번째 boundary 찾기
-
-	// boundaryPos = body.find("boundary=");
     pos = body.find("\r\n", pos);
-	// std::cout << body << std::endl;
     if (pos == std::string::npos)
 	{		
-    	std::cout<< "@@@@@@"<<std::endl;
+    	std::cout<< "@@@@@@2"<<std::endl;
 		return NULL;
-	} 
+	}
 	boundary = body.substr(0, pos - 2);
 	std::cout <<boundary <<std::endl;
     pos = pos + 2;  
-    	std::cout<< "@@@@@@"<<std::endl;
+    	std::cout<< "@@@@@@3"<<std::endl;
     while (pos < body.length()) {
         size_t lineEnd = body.find("\r\n", pos);
         if (lineEnd == std::string::npos) break; //캐리지 못찾을시
@@ -179,7 +171,6 @@ std::string Response::postHandler(Request& request) {
 	outFile.write(fileData.c_str(), fileData.length());
 	outFile.close();
     
-    // std::cout << "Successfully saved file: " << filepath << std::endl;
     return textHandler(request, request.getAccept());
 }
 
@@ -203,41 +194,85 @@ std::string Response::removeHandler(Request& request)
     return textHandler(request, request.getAccept());
 }
 
-std::string Response::cgiHandler(const Location& location,const  std::string &url)
+std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
 {
-	std::cout << location.getCgi()[0] << std::endl;
-	std::string execZero =  location.getCgi()[0].c_str();
-	std::string tmp = url;
-	if (url[url.size() - 1] != '/')
-		tmp += '/';
-	std::string execOne = tmp + location.getIndex()[0];
+    int fd[2];
+    pid_t pid;
+    if (pipe(fd) == -1)
+        throw std::runtime_error("Failed to pipe");
+    pid = fork();
+    if (pid == -1)
+    {
+        close (fd[0]);
+        close (fd[1]);
+        throw std::runtime_error("Failed to fork");
+    }
+    if (pid == 0)
+    {
+        close (fd[0]);
+        if (dup2(fd[1], 1) == -1)
+        {
+            close (fd[1]);
+            throw std::runtime_error("Failed to fork");
+        }
+        close (fd[1]);
+        std::vector<const char*> argv;
+        for (size_t i = 0; i < cgiArgv.size(); ++i) {
+            argv.push_back(cgiArgv[i].c_str());
+        }
+        argv.push_back(NULL);
+        if (execve(argv[0], (char *const *)&argv[0], NULL) == -1)
+            throw std::runtime_error("Failed to exec");
+    }
+    close(fd[1]);
 
-	const char *args[3] =
-	{
-		execZero.c_str(),
-		execOne.c_str(),
-		NULL
-	};  
-	return executeCgi(args);
+    char buffer[4096];
+    std::string response;
+    ssize_t bytes;
+
+    while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
+    {
+        response.append(buffer, bytes);
+    }
+    close(fd[0]);
+
+    int status;
+    waitpid(pid, &status, 0);
+
+    if (response.find("Content-Length") == std::string::npos) {
+        size_t postmp = response.find("\r\n\r\n");
+        response.insert(postmp + 2, createContentLength(response));
+    }
+    return response;
 }
 
+std::string Response::cgiHandler(Request& request)
+{
+    std::vector<std::string> cgiArgv;
+    cgiArgv.push_back(request.getLocation().getCgi()[0]);
+    cgiArgv.push_back(request.getMappingUrl());
+
+    std::string method = request.getMethod();
+    if(method == "GET") getArgv(cgiArgv, request.getQuery());
+    else if (method == "POST") getArgv(cgiArgv, request.getBody());
+    
+	return executeCgi(cgiArgv);
+}
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+		std::string fa = "/home/changhyu/st/cursus5/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
-		// std::cout <<"@@@@@@@@@@@\n" << request.getLocation().getRedirect() << std::endl;
-	// int error = validateRequest(request);
-	// if (error) return errorHandler(error);
-	// if (request.getLocation().getAutoindex() == true)
-    // {
-    //     return (autoIndexHandler(request));
-    // }
-    if (!request.getLocation().getCgi().empty())
+
+	int error = validateRequest(request);
+	if (error) return errorHandler(error);
+	if (!request.getLocation().getCgi().empty())
 	{
-		return(cgiHandler(request.getLocation(), request.getMappingUrl()));
+        // std::string tee = cgiHandler(request);
+        // return tee;
+		return(cgiHandler(request));
 	}
 	if (request.getMethod() == "GET") {
 		std::string accept = request.getAccept();
@@ -249,117 +284,10 @@ std::string Response::RequestHandler(Request& request) {
 			return textHandler(request, accept);
 		}
 	} else if (request.getMethod() == "POST") {
-
-			return postHandler(request);
-		// std::string type = request.getContentType();
-		// if (type == "application/x-www-form-urlencoded") {
-
-		// } else if (type == "application/json") {
-
-		// } else if (type == "multipart/form-data") {
-
-
-		// } else if (type == "application/octet-stream") {
-		// } else if (type == "text/plain") {
-
-		// }
+		return postHandler(request);
 	} else if (request.getMethod() == "DELETE") {
 		return removeHandler(request);
 
 	}
 	return 0;
-}
-
-
-std::string Response::executeCgi(const char *(&args)[3])
-{
-   int fd[2];
-   pid_t pid;
-   
-   if (pipe(fd) == -1)
-       throw std::runtime_error("Failed to pipe");
-   pid = fork();
-   if (pid == -1)
-   {
-       close (fd[0]);
-       close (fd[1]);
-       throw std::runtime_error("Failed to fork");
-   }
-   if (pid == 0)
-   {
-       close (fd[0]);
-       if (dup2(fd[1], 1) == -1)
-       {
-           close (fd[1]);
-           throw std::runtime_error("Failed to fork");
-       }
-       close (fd[1]);
-       if (execve(args[0], (char *const *)args, NULL) == -1)
-           throw std::runtime_error("Failed to exec");
-   }
-   close(fd[1]);
-
-   char buffer[4096];
-   std::string response;
-   std::string headers;
-   std::string body;
-   bool isHeader = false;
-   ssize_t bytes;
-   
-   while ((bytes = read(fd[0], buffer, sizeof(buffer))) > 0)
-   {
-       response.append(buffer, bytes);
-       if (!isHeader)
-       {
-           size_t header_end = response.find("\r\n\r\n");
-           if (header_end != std::string::npos)
-           {
-               headers = response.substr(0, header_end);
-               body = response.substr(header_end + 4);
-               isHeader = true;
-           }
-       }
-   }
-   close(fd[0]);
-   
-   int status;
-   waitpid(pid, &status, 0);
-
-   bool hasContentLength = false;
-   std::stringstream fullResponse;
-   fullResponse << "HTTP/1.1 200 OK\r\n";
-   
-   if (isHeader)
-   {
-       std::istringstream header_stream(headers);
-       std::string line;
-       while (std::getline(header_stream, line))
-       {
-           if (line.find("Content-Length:") != std::string::npos)
-           {
-               hasContentLength = true;
-               fullResponse << line << "\r\n";
-           }
-           else if (line.find("Content-Type:") != std::string::npos)
-               fullResponse << line << "\r\n";
-       }
-   }
-   
-   if (!isHeader || headers.find("Content-Type:") == std::string::npos)
-   {
-       if (!strcmp("/usr/bin/python3", args[0]))
-           fullResponse << "Content-Type: text/html\r\n";
-       else
-           fullResponse << "Content-Type: image/jpeg\r\n";
-   }
-   
-   if (!hasContentLength)
-   {
-       if (!isHeader) 
-           body = response;
-       fullResponse << "Content-Length: " << body.length() << "\r\n\r\n";
-       fullResponse << body;
-   }
-   std::cout << "@@@@\n"<<fullResponse.str()<< "\n @@@@"	;
-   return fullResponse.str();
 }

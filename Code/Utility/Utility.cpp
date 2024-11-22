@@ -33,7 +33,7 @@ int checkPermissions(const std::string& path) {
 	return 404;
 }
 
-std::string normalizedPath(const std::string& _path, const std::string& _root) {
+std::string setNormalizedPath(const std::string& _path, const std::string& _root) {
     std::string path, temp;
 
     for (size_t i = 0, j = 0; i < _path.size(); ++i) {
@@ -42,7 +42,12 @@ std::string normalizedPath(const std::string& _path, const std::string& _root) {
         j++;
     }
 
-	return _root + temp;
+	path = _root + temp;
+	if (isDirectory(path)) {
+		if (path[path.length() - 1] != '/')
+			path += '/';
+	}
+	return path;
 }
 
 std::string getGMTDate() {
@@ -51,4 +56,34 @@ std::string getGMTDate() {
 	char date_str[100];
 	strftime(date_str, sizeof(date_str), "%a, %d %b %Y %H:%M:%S GMT", gmtm);
 	return std::string(date_str);
+}
+
+void getArgv(std::vector<std::string>& argv, const std::string& str) {
+	size_t size = 0;
+	size_t pos = str.find('=');
+	while (pos != std::string::npos) {
+		size++;
+		pos = str.find('=', pos + 1);
+	}
+	std::string temp = str;
+	for (size_t i = 0; i < size; ++i) {
+		size_t start = temp.find('=');
+		size_t endpos;
+		endpos = temp.find('&', start);
+		if (endpos != std::string::npos) {
+			argv.push_back((temp.substr(start + 1, endpos - start - 1)));
+			temp = temp.substr(endpos + 1);
+		}
+		else {
+			argv.push_back(temp.substr(start + 1));
+		}
+	}
+}
+
+std::string createContentLength(const std::string& str) {
+	size_t pos = str.find("\r\n\r\n");
+	size_t size = str.substr(pos + 4).length();
+
+	std::string result = "Content-Length: " + ToString(size) + "\r\n";
+	return result;
 }

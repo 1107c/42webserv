@@ -67,36 +67,54 @@
         // 폼 제출 이벤트
         document.querySelector('form').addEventListener('submit', async function(event) {
 			event.preventDefault();  // 폼 제출 중지
+
+            if (this.submitted) return;
+            this.submitted = true;
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username) {
+                alert('아이디를 입력해주세요.');
+                this.submitted = false; // 제출 상태 해제
+                return;
+            }
+            if (!password) {
+                alert('비밀번호를 입력해주세요.');
+                this.submitted = false; // 제출 상태 해제
+                return;
+            }
+
             if (!isUsernameVerified) {
                 alert('아이디 중복확인을 해주세요.');
-            } else {
-				const username = usernameInput.value;
-				const password = passwordInput.value;
+                this.submitted = false; // 제출 상태 해제
+                return;
+            }
 
-                const requestBody = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}\r\n\r\n`;
-				try {
-					const response = await fetch('/signUp', {
-						method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Content-Length': requestBody.length.toString()
-                        },
-                        body: requestBody
-					});
+            const requestBody = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+            try {
+                const response = await fetch('/signUp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: requestBody
+                });
 
-					const result = await response.text();
-					console.log('회원가입 응답:', result);
-					
-					if (result === 'success') {
-						alert('회원가입에 성공하셨습니다!');
-						window.location.href = '/';
-					} else {
-						alert('회원가입에 실패했습니다.');
-					}
-				} catch (error) {
-					alert('회원가입 중 오류가 발생했습니다.');
-				}
-			}
+                const result = await response.text();
+                console.log('회원가입 응답:', result);
+                
+                if (result === 'success') {
+                    alert('회원가입에 성공하셨습니다!');
+                    window.location.href = '/';
+                } else {
+                    alert('회원가입에 실패했습니다.');
+                }
+            } catch (error) {
+                alert('회원가입 중 오류가 발생했습니다.');
+            } finally {
+                this.submitted = false;
+            }
         });
     });
     </script>

@@ -32,25 +32,25 @@ std::string Response::getErrorPath(int error) {
 	std::string path;
 	switch (error) {
 		case 403:
-			path = "../ErrorHtml/403.html";
+			path = "ErrorHtml/403.html";
 			break ;
 		case 404:
-			path = "../ErrorHtml/404.html";
+			path = "ErrorHtml/404.html";
 			break ;
 		case 405:
-			path = "../ErrorHtml/405.html";
+			path = "ErrorHtml/405.html";
 			break ;
 		case 413:
-			path = "../ErrorHtml/413.html";
+			path = "ErrorHtml/413.html";
 			break ;
 		case 500:
-			path = "../ErrorHtml/500.html";
+			path = "ErrorHtml/500.html";
 			break ;
 		case 505:
-			path = "../ErrorHtml/505.html";
+			path = "ErrorHtml/505.html";
 			break ;
 		default:
-			path = "../ErrorHtml/404.html";
+			path = "ErrorHtml/404.html";
 	}
 	return path;
 }
@@ -75,6 +75,7 @@ int Response::getValidate(Request& request) {
 
 int Response::validateRequest(Request& request) {
 	std::string path = request.getMappingUrl();
+	std::cout << "######################3\n" << path << std::endl;
 	std::string version = request.getVersion();
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") return 505;
 	int error = checkPermissions(path.c_str());
@@ -83,7 +84,8 @@ int Response::validateRequest(Request& request) {
 		error = getValidate(request);
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
-
+		error = getValidate(request);
+		if (error) return error;
 	} else if (request.getMethod() == "DELETE") {
 
 	}

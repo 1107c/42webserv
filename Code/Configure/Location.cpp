@@ -70,3 +70,10 @@ const std::string &Location::getRedirect() const
 {
     return _redirect;
 }
+
+void Location::reset() {
+    ServerBlock::reset();
+    this->_path = "";
+    this->_cgi = std::vector<std::string>();
+    this->_redirect = "";
+}

@@ -34,3 +34,23 @@ bool Request::requestHandler(const std::string& rawRequest) {
     debug();
     return true;
 }
+
+void Request::reset(const std::vector<std::vector<Location> > *conf) {
+    this->_method = "";
+    this->_path = "";
+    this->_query = "";
+    this->_version = "";
+    this->_serverName = "";
+    this->_port = "";
+    this->_mappingUrl = "";
+    this->_boundary = "";
+    this->_headers = std::map<std::string, std::string>();
+    this->_body = "";
+    this->_contentLength = 0;
+    this->_conf = conf;
+    this->_serverBlockIdx = 0;
+    this->_location.reset();
+    this->_isParsed = false;
+    this->_isComplete = false;
+    this->_errorCode = 0;
+}

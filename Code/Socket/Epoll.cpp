@@ -137,53 +137,51 @@ void Epoll::handleRead(int &fd)
 {
     char buffer[5];
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
-    static int conLeng;
-    static int currentLeng;
+    static size_t conLeng;
+    static size_t currentLeng;
+    static Request request(&_config);
 
     if (bytesRead > 0) {
         _result[fd].append(buffer, bytesRead);
-        if (conLeng != 0)
-            currentLeng += bytesRead;
-        if ((_result[fd].size() >= 4 && _result[fd].substr(_result[fd].size() - 4) == "\r\n\r\n") ||
-        (conLeng != 0 && conLeng == currentLeng))
-        {
-            //std::cout << "Received complete request:\n" << _result[fd] << std::endl;
-            //1. request 요청 수락
+        size_t pos = _result[fd].find("\r\n\r\n");
+        if (_result[fd].size() >= 4 && pos != std::string::npos) {
             std::cout << "=== Request Message ===\n";
-            std::cout << _result[fd] << std::endl;
-            Request request(&_config);
-            request.requestHandler(_result[fd]);
-			std::cout << "Here: " << request.getPath() << std::endl;
-            std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
-            std::cout << "Error code : " << request.getErrorCode() << std::endl;
-            std::cout << "leng" <<request.getContentLength() <<std::endl;
-            if (currentLeng == 0 && request.getContentLength() != 0)
-            {
-                conLeng = request.getContentLength(); //5644
-                return;
+            // std::cout << _result[fd] << std::endl;
+            if (!conLeng) {
+                request.requestHandler(_result[fd]);
+                conLeng = request.getContentLength();
             }
-            
-            Response response;
-            if (request.getErrorCode())
-            {
-
-                this->responseMessage = response.errorHandler(request.getErrorCode());
-            }
+            if (!currentLeng)
+                currentLeng = _result[fd].substr(pos + 4).length();
             else
-            {
-
-                this->responseMessage = response.RequestHandler(request);
-            }
-            conLeng = 0;
-            currentLeng = 0;
-            _result[fd].clear();
-            epoll_event ev;
-            ev.events = EPOLLOUT;
-            ev.data.fd = fd;
-            if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
-            {
-                handleClose(fd);
-                return;
+                currentLeng += bytesRead;
+            // std::cout << "Here: " << request.getPath() << std::endl;
+            // std::cout << "Maping url : " << request.getMappingUrl() << std::endl;
+            // std::cout << "Error code : " << request.getErrorCode() << std::endl;
+            // std::cout << "leng" <<request.getContentLength() <<std::endl;
+            if (!conLeng || conLeng == currentLeng) {
+                request.setBody(_result[fd].substr(pos + 4));
+                Response response;
+                if (request.getErrorCode())
+                {
+                    this->responseMessage = response.errorHandler(request.getErrorCode());
+                }
+                else
+                {
+                    this->responseMessage = response.RequestHandler(request);
+                }
+                conLeng = 0;
+                currentLeng = 0;
+                request.reset(&_config);
+                _result[fd].clear();
+                epoll_event ev;
+                ev.events = EPOLLOUT;
+                ev.data.fd = fd;
+                if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
+                {
+                    handleClose(fd);
+                    return;
+                }    
             }
         }
     }
@@ -259,18 +257,19 @@ void Epoll::initClient()
             throw std::runtime_error("epoll wait failed");
         for (int i = 0; i < nfds; ++i)
         {
-            int serverSocket = isServerSocket(events[i].data.fd);
+            int sock = events[i].data.fd;
+            int serverSocket = isServerSocket(sock);
 
             if (serverSocket)
                 handleNewConnection(serverSocket);
             else
             {
                 if (events[i].events & EPOLLIN)
-                    handleRead(events[i].data.fd);
+                    handleRead(sock);
                 if (events[i].events & EPOLLOUT)
-                    handleWrite(events[i].data.fd);
+                    handleWrite(sock);
                 if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
-                    handleClose(events[i].data.fd);
+                    handleClose(sock);
             }
         }
     }
