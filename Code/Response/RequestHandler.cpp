@@ -342,9 +342,10 @@ std::string Response::cgiHandler(Request& request)
     cgiArgv.push_back(request.getMappingUrl());
 
     std::string method = request.getMethod();
+
     if(method == "GET") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
-    
+
 	return executeCgi(cgiArgv);
 }
 
