@@ -283,8 +283,7 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
     close(fd[0]);
     if (cgiArgv[0] == "/usr/bin/python3")
     {
-        size_t pos = 0;
-        if (pos != response.find("Traceback"))
+        if (response.empty())
             return errorHandler(500);
     }
 
@@ -305,9 +304,10 @@ std::string Response::cgiHandler(Request& request)
     cgiArgv.push_back(request.getMappingUrl());
 
     std::string method = request.getMethod();
+
     if(method == "GET") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
-    
+
 	return executeCgi(cgiArgv);
 }
 

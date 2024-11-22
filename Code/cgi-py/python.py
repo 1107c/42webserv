@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import datetime
 
-current_time = datetime.datetime.now().strftimase("%Y-%m-%d %H:%M:%S")
+current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 html = f"""<html>
 <body>
