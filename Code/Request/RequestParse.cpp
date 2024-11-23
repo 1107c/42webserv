@@ -11,10 +11,6 @@ bool Request::parse(const std::string& rawRequest) {
 
         //2. start line 파싱
         ssize_t firstLine = rawRequest.find("\r\n");
-        if (headerEnd == std::string::npos) {
-            setError(400);
-            return false;
-        }
 
         std::string startLine = rawRequest.substr(0, firstLine);
         if (!parseStartLine(startLine)) {
@@ -143,6 +139,8 @@ void Request::parseQueryString(const std::string& url) {
     if (queryPos != std::string::npos) {
         this->_path = url.substr(0, queryPos);
         this->_query = url.substr(queryPos + 1);
+		std::cout << "path: " << _path << "\n";
+		std::cout << "query: " << _query << "\n";
     } else {
         this->_path = url.substr(0);
     }

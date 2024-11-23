@@ -7,7 +7,32 @@
   <link rel="stylesheet" href="styles.css">
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+	if (sessionStorage.getItem('id'))
+		window.location.href = '/'
+
+	function signin() {
+		window.location.href = '/signIn.html';
+	}
+
+    document.addEventListener('DOMContentLoaded', async function() {
+		id = sessionStorage.getItem('id');
+		if (id)
+		{
+			try {
+                const response = await fetch('/check-id?id=' + id, {
+                    method: 'GET'
+                });
+
+                const result = await response.text();
+				data = JSON.parse(result).status;
+                if (data === 'login')
+					window.location.href = '/';
+				else
+					sessionStorage.clear();
+            } catch (error) {
+				window.location.href = '/error';
+            }
+		}
         const checkButton = document.querySelector('.btn-check');
         const submitButton = document.querySelector('button[type="submit"]');
         const usernameInput = document.getElementById('username');
@@ -40,9 +65,9 @@
                 });
 
                 const result = await response.text();
-				console.log('Raw response:', result);  // 전체 응답 확인
-        		console.log('Response status:', response.status);  // 상태 코드 확인
-        		console.log('Response headers:', response.headers);  // 헤더 확인
+				// console.log('Raw response:', result);  // 전체 응답 확인
+        		// console.log('Response status:', response.status);  // 상태 코드 확인
+        		// console.log('Response headers:', response.headers);  // 헤더 확인
 
                 if (result === 'available') {
                     alert('사용 가능한 아이디입니다.');
@@ -106,7 +131,7 @@
                 
                 if (result === 'success') {
                     alert('회원가입에 성공하셨습니다!');
-                    window.location.href = '/';
+                    window.location.href = '/signIn.html';
                 } else {
                     alert('회원가입에 실패했습니다.');
                 }
@@ -139,6 +164,9 @@
         <button type="submit">가입하기</button>
       </div>
     </form>
+	<div class="form-group"></div>
+		<button onclick="signin()">로그인</button>
+	</div>
   </div>
 </body>
 </html>

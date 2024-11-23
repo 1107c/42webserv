@@ -59,7 +59,7 @@ std::string create_cookie_http_response() {
 
 std::string create_image_response() {
     // 바이너리 모드로 파일 열기
-    std::ifstream file("/home/changhyu/st/cursus5/webserv/favi/background.jpg", std::ios::binary);
+    std::ifstream file("/home/ksuh/goinfre/42webserv.4/favi/background.jpg", std::ios::binary);
     if (!file.is_open()) {
         return ""; // 또는 에러 응답
     }
@@ -87,7 +87,7 @@ std::string create_image_response() {
 
 std::string create_test_image_response() {
     // 바이너리 모드로 파일 열기
-    std::ifstream file("/home/changhyu/st/cursus5/webserv/favi/gyeongju.jpeg", std::ios::binary);
+    std::ifstream file("/home/ksuh/goinfre/42webserv.4/favi/gyeongju.jpeg", std::ios::binary);
     if (!file.is_open()) {
         return ""; // 또는 에러 응답
     }
@@ -115,7 +115,7 @@ std::string create_test_image_response() {
 
 std::string create_favi_response() {
 	// 바이너리 모드로 파일 열기
-    std::ifstream file("/home/changhyu/st/cursus5/webserv/favi/favi.ico", std::ios::binary);
+    std::ifstream file("/home/ksuh/goinfre/42webserv.4/favi/favi.ico", std::ios::binary);
     if (!file.is_open()) {
         return ""; // 또는 에러 응답
     }

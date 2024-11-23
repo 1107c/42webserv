@@ -14,6 +14,11 @@
             "id": "ee",
             "salt": "2e24e85073e3ac27dd8e5be280fc3da2",
             "password": "2d9c9f2ab37a930d565c32ac7f31b8f51d2cfa097c141d33e2ec2159c59d8db6"
+        },
+        {
+            "id": "aaa",
+            "salt": "41824b9fe8098e84c0f84ad4605f5fb6",
+            "password": "2ddc70a693c410c1d4bf81151942369fd20abcfe9c9947d0fcb4efd3ac0a18f9"
         }
     ],
     "sessions": []

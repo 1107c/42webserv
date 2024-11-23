@@ -9,11 +9,15 @@
     </head>
     <body>
         <div class="background-container">
-            <nav class="authorize">
+            <nav class="authorize" id="login-signup">
                 <a href="/signIn.html">로그인</a>
                 |
                 <a href="/signUp.html">회원가입</a>
             </nav>
+			<div class="login" id="user-info" style="display:none;">
+				<p>안녕하세요, <span id="username"></span>님!</p>
+				<div id="logout">로그아웃</div>
+			</div>
             <h1 class="head-text">42Webserv</h1>
         </div>
         <h2 class="page-content">지역 소개</h2>
@@ -37,6 +41,56 @@
                 <div class="shape-title">지역 6</div>
             </div>
             <script>
+				const id = sessionStorage.getItem('id'); // 로그인 상태 확인
+				window.onload = async function() {
+
+		            // 로그인하지 않은 경우
+		            if (!id) {
+		                document.getElementById('login-signup').style.display = 'block';
+		                document.getElementById('user-info').style.display = 'none';
+		            } else {
+						try {
+			                const response = await fetch('/check-id?id=' + id, {
+			                    method: 'GET'
+			                });
+
+			                const result = await response.text();
+							const data = JSON.parse(result).status;
+							// 로그인한 경우
+			                if (data === 'login') {
+								document.getElementById('login-signup').style.display = 'none';
+				                document.getElementById('user-info').style.display = 'block';
+								document.getElementById('username').textContent = id;
+			                }
+							else
+								sessionStorage.clear();
+			            } catch (error) {
+							window.location.href = '/error';
+			            }
+		            }
+		        }
+
+				document.getElementById('logout').addEventListener('click', async function(event) {
+			        event.preventDefault(); // 기본 GET 요청 방지
+
+			        try {
+		                const response = await fetch('/logout?id=' + id, {
+		                    method: 'DELETE'
+		                });
+
+		                const result = await response.text();
+						const data = JSON.parse(result).status;
+		                if (data === "success") {
+							sessionStorage.clear();
+							window.location.href = '/';
+						}
+						else
+							window.location.href = '/error';
+		            } catch (error) {
+						window.location.href = '/error';
+		            }
+			    });
+
                 document.querySelectorAll('.shape').forEach(shape => {
                     shape.addEventListener('click', function(e) {
                         e.preventDefault();

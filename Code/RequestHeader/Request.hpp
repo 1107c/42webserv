@@ -79,6 +79,7 @@ class Request {
 
 
         // Utility 메소드들
+		void printHeaders(void);
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
 		void setMappingUrl(std::string& path);

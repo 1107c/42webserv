@@ -5,20 +5,34 @@ std::string Response::errorHandler(int error) {
 	std::string path = getErrorPath(error);
 	std::string header = getErrorHeader(error);
 	std::ifstream file(path.c_str());
-	if (!file.is_open()) {
-        header = getErrorHeader(500);
-        path = getErrorPath(500);
-    }
 	std::string html;
-	std::string line;
-	while (std::getline(file, line)) {
-		html += line + "\n";
-	}
-	std::ostringstream ss;
-	ss << html.size();
-
-    std::cout << path << "\n" << header << std::endl;
 	std::string response = header + "\r\n";
+	std::ostringstream ss;
+
+	if (!file.is_open()) {
+	    header = getErrorHeader(500);
+	    path = getErrorPath(500);
+	    html =
+	        "<!DOCTYPE html>\n"
+	        "<html>\n"
+	        "<head>\n"
+	        "    <meta charset=\"UTF-8\">\n"
+	        "    <title>500</title>\n"
+	        "</head>\n"
+	        "<body>\n"
+	        "    500\n"
+	        "</body>\n"
+	        "</html>\n";
+	}
+	else
+	{
+		std::string line;
+		while (std::getline(file, line)) {
+			html += line + "\n";
+		}
+	}
+	ss << html.size();
+    std::cout << path << "\n" << header << std::endl;
 	response += "Content-Type: text/html; charset=UTF-8\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Connection: close\r\n";
@@ -346,15 +360,22 @@ std::string Response::cgiHandler(Request& request)
 
     std::string method = request.getMethod();
 
-    if(method == "GET") getArgv(cgiArgv, request.getQuery());
+    if(method == "GET" || method == "DELETE") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
+
+    std::vector<std::string>::iterator it;
+
+	// for (it=cgiArgv.begin(); it!=cgiArgv.end(); it++)
+	// {
+	// 	std::cout << "cgiArgv: " << *it << "\n";
+	// }
 
 	return executeCgi(cgiArgv);
 }
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+		std::string fa = "/home/ksuh/goinfre/42webserv.4/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
@@ -362,13 +383,13 @@ std::string Response::RequestHandler(Request& request) {
     {
         return redirectHandler(request.getLocation().getRedirect() , "302");
     }
-    std::string mapPath = request.getMappingUrl(); 
-    if (isDirectory(mapPath)) {
-        if (mapPath[mapPath.size() - 1] != '/')
-            return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
-    }
-	int error = validateRequest(request);
-	if (error) return errorHandler(error);
+    // std::string mapPath = request.getMappingUrl(); 
+    // if (isDirectory(mapPath)) {
+    //     if (mapPath[mapPath.size() - 1] != '/')
+    //         return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
+    // }
+	// int error = validateRequest(request);
+	// if (error) return errorHandler(error);
 
 
 	if (!request.getLocation().getCgi().empty())
