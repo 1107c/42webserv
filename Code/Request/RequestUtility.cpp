@@ -10,19 +10,40 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //     _mappingUrl = _location.getRedirect();
     // }
     {
-        std::string temp;
+        std::string path;
+        _isAutoindex = true;
+        
 
-		if (!_location.getCgi().empty())
-			_path = _path + '/' + _location.getIndex()[0];
-		else if (_path == "/")
-			_path = _path + _location.getIndex()[0];
+        for (size_t i = 0; i < _location.getIndex().size(); ++i)
+        {
+            std::string temp;
+            path = "";
+            if (_path == _location.getPath()) {
+                if (!_location.getCgi().empty())
+                    path = _path + '/' + _location.getIndex()[i];
+                else
+                    path = _path + _location.getIndex()[i];
+            }
+            else
+                path = _path;
+            for (size_t i = 0, j = 0; i < path.size(); ++i) {
+                if (i && (temp[j] == '/' && path[i] == '/')) continue;
+                temp += path[i];
+                j++;
+            }
+            path = _location.getRoot() + temp;
 
-        for (size_t i = 0, j = 0; i < _path.size(); ++i) {
-            if (i && (temp[j] == '/' && _path[i] == '/')) continue;
-            temp += _path[i];
-            j++;
+            if (!checkPermissions(path))
+            {
+                _isAutoindex = false;
+                _myIndex = _path;
+                _path = temp;
+                break;
+            }
         }
-        _mappingUrl = _location.getRoot() + temp;
+        _mappingUrl = path; // 아무것도 존재하지 않을 경우 뭘줘야하지..?
+
+
 
 		// std::cout << "\n\n====================TEST========================\n\n";
 		// std::cout << _path << "\n";
@@ -35,6 +56,7 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
 		// std::cout << "\n\n================================================\n\n";
     }
 }
+
 
 bool Request::validateRequest() {
     int methodFindIdx = -1;

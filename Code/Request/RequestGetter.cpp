@@ -30,3 +30,13 @@ const std::string Request::getContentType() const {
     std::string type = typeHeader.substr(0, pos - 1);
     return type;
 }
+
+const bool& Request::getIsAutoindex() const
+{
+    return _isAutoindex;
+}
+
+const std::string Request::getMyindex() const
+{
+    return _myIndex;
+}

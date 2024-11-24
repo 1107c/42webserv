@@ -172,6 +172,7 @@ void Epoll::handleRead(int &fd)
 		}
 		if (isend)
 		{
+            
             std::cout << "\n\n----------------------------------\n";
 			std::cout << "End of request reached\n\n";
             std::cout << "path: " << request.getPath() << std::endl;

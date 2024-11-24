@@ -19,7 +19,18 @@
             "id": "aaa",
             "salt": "41824b9fe8098e84c0f84ad4605f5fb6",
             "password": "2ddc70a693c410c1d4bf81151942369fd20abcfe9c9947d0fcb4efd3ac0a18f9"
+        },
+        {
+            "id": "11111",
+            "salt": "0b5ad2f46153a2a326693cbe0c67c726",
+            "password": "58b8ea75a01b9a507ee25099f4f9ee58dfc7f8f433c623e0e833ae314cfc93db"
         }
     ],
-    "sessions": []
+    "sessions": [
+        {
+            "id": "11111",
+            "session_id": "11111_a6cf4928bcd20bfdf746d047edb43b24",
+            "expire_time": "Sun, 24 Nov 2024 03:09:18 +0000"
+        }
+    ]
 }

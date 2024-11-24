@@ -30,29 +30,13 @@ std::string Response::getErrorHeader(int error) {
 
 std::string Response::getErrorPath(int error) {
 	std::string path;
-	switch (error) {
-		case 403:
-			path = "ErrorHtml/403.html";
-			break ;
-		case 404:
-			path = "ErrorHtml/404.html";
-			break ;
-		case 405:
-			path = "ErrorHtml/405.html";
-			break ;
-		case 413:
-			path = "ErrorHtml/413.html";
-			break ;
-		case 500:
-			path = "ErrorHtml/500.html";
-			break ;
-		case 505:
-			path = "ErrorHtml/505.html";
-			break ;
-		default:
-			path = "ErrorHtml/404.html";
-	}
-	return path;
+	
+	std::map<std::string, std::string>	_error = _loc.getErrorPage();
+    std::map<std::string, std::string>::iterator it = _error.find(ToString(error));
+    if (it != _error.end()) {
+        return it->second;
+    }
+	return "ErrorHtml/404.html";
 }
 
 int Response::getValidate(Request& request) {
