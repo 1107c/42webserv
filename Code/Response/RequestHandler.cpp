@@ -440,16 +440,16 @@ std::string Response::RequestHandler(Request& request) {
     // }
 
     
-    std::string mapPath = request.getMappingUrl(); 
-    // std::cout << "@@@@@"<<mapPath <<std::endl;
-    // if (isDirectory(mapPath)) {
-    //     if (mapPath[mapPath.size() - 1] != '/')
-    //         return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
-    // }
-    
-	// int error = validateRequest(request);
-	// if (error) return errorHandler(error);
-
+    std::string mapdir;
+    mapdir = _loc.getRoot() + request.getMyindex();
+    // std::cout << "@@@@@"<<mapdir<<","<<request.getMyindex() <<std::endl;
+    if (isDirectory(mapdir) && request.getMyindex() == _loc.getPath()) {
+        if (mapdir[mapdir.size() - 1] != '/')
+            return redirectHandler("http://" + request.getHeader("Host") + request.getMyindex() + '/', "301");
+    }
+	int error = validateRequest(request);
+    std::cout << "#####"<<error<<std::endl;
+	if (error) return errorHandler(error);
     if (_loc.getAutoindex() && request.getIsAutoindex())
     {
         return autoIndexHandler(request);

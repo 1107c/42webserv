@@ -10,19 +10,27 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
     //     _mappingUrl = _location.getRedirect();
     // }
     {
-        std::string path;
-        _isAutoindex = true;
-        
 
+        std::string path, path2;
+        _isAutoindex = true;
+        path2 = _path;
+        _myIndex = _path;
+        if (_path[_path.size() - 1] == '/' && _path != "/")
+            path2 = _path.erase(_path.size() - 1);
+        if (path2 == _location.getPath() && _location.getIndex().empty())
+        {
+            _isAutoindex = false;
+            return ;
+        }
         for (size_t i = 0; i < _location.getIndex().size(); ++i)
         {
             std::string temp;
             path = "";
-            if (_path == _location.getPath()) {
-                if (!_location.getCgi().empty())
-                    path = _path + '/' + _location.getIndex()[i];
-                else
+            if (path2 == _location.getPath()) {
+                if (_location.getPath() == "/")
                     path = _path + _location.getIndex()[i];
+                else
+                    path = _path + '/' + _location.getIndex()[i];
             }
             else
                 path = _path;
@@ -36,7 +44,6 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
             if (!checkPermissions(path))
             {
                 _isAutoindex = false;
-                _myIndex = _path;
                 _path = temp;
                 break;
             }

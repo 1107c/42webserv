@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Test</title>
+       <script>
+           function deleteFile() {
+               var filename = document.getElementById('deleteFileName').value;
+               if (!filename) {
+                   return;
+               }
+               fetch('http://127.0.0.1:8000/uploaded/' + filename, {
+                   method: 'DELETE'
+               })
+               .then(response => {
+                   document.getElementById('deleteFileName').value = '';  // 입력창 초기화
+               })
+               .catch(error => {
+                   console.error('Error:', error);
+               });
+           }
+       </script>
+   </head>  
+   <body>
+       <h1>Test</h1>
+       <p>Hello</p>
+       <form method="POST" enctype="multipart/form-data">
+           <input type="file" name="file" id="imageFileOpenInput" accept="image/*" required>
+           <button type="submit">Upload</button>
+       </form>
+
+       <!-- 파일 삭제 섹션 -->
+       <div>
+           <h3>Delete File</h3>
+           <input type="text" id="deleteFileName" placeholder="Enter filename to delete">
+           <button onclick="deleteFile()">Delete File</button>
+       </div>
+   </body>
+</html>

@@ -41,6 +41,7 @@ bool Request::getConfigOption() {
     } else {
         _location = (*_conf)[serverBlockIdx][getLocationBlock(serverBlockIdx)];
     }
+    std::cout << "@@@@@"<< _location.getPath()<<std::endl;
     return true;
 }
 
@@ -53,18 +54,24 @@ int Request::getLocationBlock(int& serverBlockIdx) {
         temp = temp.substr(0, pos);
         pos = temp.find('/');
     }
-
     std::string str = _path;
     for (size_t i = 0; i <= size; ++i) {
-        for (size_t j = 0; j < (*_conf)[serverBlockIdx].size(); ++j) {
+        for (size_t j = 0; j < (*_conf)[serverBlockIdx].size(); ++j)
+        {
+            // std::cout << "getpath :" << (*_conf)[serverBlockIdx][j].getPath() <<std::endl; 
             if ((*_conf)[serverBlockIdx][j].getPath() == str)
                 return j;
         }
+        // std::cout <<"b:str:"<<str << std::endl;
         pos = str.rfind('/');
-        if (i + 1 != size)
+        if (pos == 0)
+            str = "/";
+        else if (i != size)
             str = str.substr(0, pos);
         else
             str = "/";
+        // std::cout <<"a:str:"<<str << std::endl;
+
     }
     return 0;
 }
