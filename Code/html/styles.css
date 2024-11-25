@@ -250,3 +250,51 @@ html, body {
   .btn-check:hover {
     background-color: #0056b3;
   }
+
+  .header {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	background-color: #f4f4f4;
+	padding: 10px 20px;
+	border-bottom: 1px solid #ddd;
+	border-radius: 10px;
+	width: auto;
+}
+.profile {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.profile img {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.profile img:hover {
+    cursor: url("/home.html"), auto;
+	transform: scale(1.1);
+}
+
+.profile-id {
+	font-size: 14px;
+	font-weight: bold;
+	color: #333;
+}
+.logout-btn {
+	background-color: #ff4b5c;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	padding: 5px 10px;
+	cursor: pointer;
+	font-size: 14px;
+}
+.logout-btn:hover {
+	background-color: #e04351;
+}

@@ -18,6 +18,8 @@ bool Request::parse(const std::string& rawRequest) {
             return false;
         }
 
+
+
         //3. 헤더 파싱
         std::string headers = rawRequest.substr(firstLine + 2, headerEnd - firstLine - 2);
         if (!parseHeaders(headers)) {
@@ -105,6 +107,28 @@ bool Request::parseHeaders(const std::string& headerSection) {
         setError(400);
         return false;
     }
+
+	if (this->_headers.count("Cookie")) {
+		try {
+            std::string cookie;
+            std::istringstream iss(this->_headers.at("Cookie"));
+            if (!(iss >> cookie)) {
+                setError(400);
+                return (false);
+            }
+            //문자열 쪼개기
+            size_t colonPos = cookie.find("=");
+            if (colonPos == std::string::npos) {
+                setError(400);
+                return false;
+            }
+            this->_cookie = cookie.substr(colonPos + 1);
+			// std::cout << "Cookie: " << _cookie << "\n";
+        } catch (...) {
+            setError(400);
+            return false;
+        }
+	}
 
     return true;
 }

@@ -4,35 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup Form</title>
+  <script>
+	(async function () {
+		try {
+			const response = await fetch('/check-id', {
+				method: 'GET'
+			});
+
+			const data = await response.json();
+			if (data.status == 'login')
+				window.location.href = '/';
+		} catch (error) {
+			console.log("error: ", error);
+			window.location.href = '/error';
+		}
+	}());
+  </script>
   <link rel="stylesheet" href="styles.css">
 
   <script>
-	if (sessionStorage.getItem('id'))
-		window.location.href = '/'
-
 	function signin() {
 		window.location.href = '/signIn.html';
 	}
 
     document.addEventListener('DOMContentLoaded', async function() {
-		id = sessionStorage.getItem('id');
-		if (id)
-		{
-			try {
-                const response = await fetch('/check-id?id=' + id, {
-                    method: 'GET'
-                });
-
-                const result = await response.text();
-				data = JSON.parse(result).status;
-                if (data === 'login')
-					window.location.href = '/';
-				else
-					sessionStorage.clear();
-            } catch (error) {
-				window.location.href = '/error';
-            }
-		}
         const checkButton = document.querySelector('.btn-check');
         const submitButton = document.querySelector('button[type="submit"]');
         const usernameInput = document.getElementById('username');
@@ -57,36 +52,29 @@
 
         // 중복확인 버튼 클릭 이벤트
         checkButton.addEventListener('click', async function() {
-            const username = usernameInput.value;
-            
-            try {
-                const response = await fetch('/check-username?username=' + username, {
-                    method: 'GET'
-                });
+			const username = usernameInput.value;
+			console.log("username: ", username);
+			let result = 1;
+			try {
+				const response = await fetch('/check-username?username=' + username, {
+					method: 'GET'
+				});
+				const status = await response.text();
 
-                const result = await response.text();
-				// console.log('Raw response:', result);  // 전체 응답 확인
-        		// console.log('Response status:', response.status);  // 상태 코드 확인
-        		// console.log('Response headers:', response.headers);  // 헤더 확인
-
-                if (result === 'available') {
-                    alert('사용 가능한 아이디입니다.');
-                    isUsernameVerified = true;  // 검증 성공
-                    submitButton.disabled = false;  // 가입하기 버튼 활성화
-                } else if (result === 'duplicate') {
-                    alert('이미 사용중인 아이디입니다.');
-                    isUsernameVerified = false;
-                    submitButton.disabled = true;
-                } else {
-					alert('사용할 수 없는 아이디입니다.');
-					isUsernameVerified = false;
-                    submitButton.disabled = true;
+				if (status === 'available') {
+					alert('사용 가능한 아이디입니다.');
+					result = 0;
 				}
-            } catch (error) {
-                alert('확인 중 오류가 발생했습니다.');
-                isUsernameVerified = false;
-                submitButton.disabled = true;
-            }
+				else if (status === 'duplicate')
+					alert('이미 사용중인 아이디입니다.');
+				else
+					alert('사용할 수 없는 아이디입니다.');
+			} catch (error) {
+				console.log("error: ", error);
+				alert('확인 중 오류가 발생했습니다.');
+			}
+            isUsernameVerified = result == 0 ? true : false;
+			submitButton.disabled = result == 0 ? false : true;
         });
 
         // 폼 제출 이벤트
@@ -118,28 +106,25 @@
 
             const requestBody = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
             try {
-                const response = await fetch('/signUp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: requestBody
-                });
-
-                const result = await response.text();
-                console.log('회원가입 응답:', result);
-                
-                if (result === 'success') {
-                    alert('회원가입에 성공하셨습니다!');
-                    window.location.href = '/signIn.html';
-                } else {
-                    alert('회원가입에 실패했습니다.');
-                }
-            } catch (error) {
-                alert('회원가입 중 오류가 발생했습니다.');
-            } finally {
-                this.submitted = false;
-            }
+				const response = await fetch('/signUp', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'Content-Length': requestBody.length.toString(),
+					},
+					body: requestBody
+				});
+			
+				const result = await response.text();		
+				if (result === 'success') {
+					alert('회원가입에 성공하셨습니다!');
+					window.location.href = '/signIn.html';
+				} else
+					alert('회원가입에 실패했습니다.');
+			} catch (error) {
+				console.log("error: ", error);
+				alert('회원가입 중 오류가 발생했습니다.');
+			}
         });
     });
     </script>

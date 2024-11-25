@@ -34,8 +34,8 @@ try:
 	with open(file_path, 'r+') as file:
 		data = json.load(file)
 
-		user_id = sys.argv[1].strip()
-		user_pwd = sys.argv[2].strip()
+		user_id = sys.argv[2].strip()
+		user_pwd = sys.argv[3].strip()
 		match = any(user['id'] == user_id and user['password'] == hash_pwd(user_pwd + user['salt'].strip())
 				 for user in data.get("users", []))
 		cookie = "\r\n"

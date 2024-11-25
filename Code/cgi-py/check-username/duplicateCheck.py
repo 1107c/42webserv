@@ -8,7 +8,7 @@ file_path = '../../User/data.json'
 try:
 	with open(file_path, 'r') as file:
 		data = json.load(file)
-	user_id = sys.argv[1]
+	user_id = sys.argv[2]
 	user_exists = any(user['id'] == user_id for user in data.get("users", []))
 	
 	if user_exists:

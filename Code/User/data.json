@@ -19,7 +19,18 @@
             "id": "aaa",
             "salt": "41824b9fe8098e84c0f84ad4605f5fb6",
             "password": "2ddc70a693c410c1d4bf81151942369fd20abcfe9c9947d0fcb4efd3ac0a18f9"
+        },
+        {
+            "id": "bbb",
+            "salt": "d1412d1274106ba9233fdc7360ced4d6",
+            "password": "12c4161f7990c68a91182295c3f38482359f8e6c37852be41302d995c1e1dffd"
         }
     ],
-    "sessions": []
+    "sessions": [
+        {
+            "id": "aaa",
+            "session_id": "aaa_ead0b2aef3d9d22075f9da00c81229a4",
+            "expire_time": "Mon, 25 Nov 2024 06:20:16 +0000"
+        }
+    ]
 }

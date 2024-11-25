@@ -149,6 +149,7 @@ void Epoll::handleRead(int &fd)
         	pos = _result[fd].find("\r\n\r\n");
         	if (_result[fd].size() >= 4 && pos != std::string::npos) {
 	            std::cout << "\n\n================== Request Message =====================\n\n";
+				// std::cout << fd << "\n";
 	            std::cout << _result[fd].substr(0, pos) << std::endl;
 				std::cout << "============================================================\n\n";
 	            if (!contentLength) {
@@ -190,7 +191,13 @@ void Epoll::handleRead(int &fd)
             currentLength = 0;
 			pos = 0;
             request.reset(&_config);
+		    // std::cout << "\n\n================== TEST =====================\n\n";
+			// std::cout << fd << "\n";
+	        // std::cout << _result[fd].substr(0, pos) << std::endl;
+			// std::cout << "============================================================\n\n";
             _result[fd].clear();
+
+
             epoll_event ev;
             ev.events = EPOLLOUT;
             ev.data.fd = fd;
@@ -215,11 +222,13 @@ void Epoll::handleWrite(int &fd)
     if (_pendingResponses.find(fd) == _pendingResponses.end())
     {
         _pendingResponses[fd] = this->responseMessage;
+        // std::cout << "=============== response =============== \n";
+		// std::cout << this->responseMessage << std::endl;
+		// std::cout << "======================================";
 
-        std::cout << "=== response === \n";
-        std::string restemp = responseMessage.substr(0, responseMessage.find("\r\n\r\n"));
+        // std::string restemp = responseMessage.substr(0, responseMessage.find("\r\n\r\n"));
         // std::cout << this->responseMessage << std::endl;
-        std::cout << restemp << std::endl;
+        // std::cout << restemp << std::endl;
 
     }
     size_t to_send = std::min(_pendingResponses[fd].size(), static_cast<size_t>(5));

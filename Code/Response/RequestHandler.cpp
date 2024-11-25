@@ -134,7 +134,6 @@ std::string Response::redirectHandler(const std::string &mapPath, const std::str
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
     std::string html;
-
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(request);
     } else if (checkDownload(mapPath) && request.getLocation().getAutoindex()) {
@@ -359,18 +358,24 @@ std::string Response::cgiHandler(Request& request)
     cgiArgv.push_back(request.getMappingUrl());
 
     std::string method = request.getMethod();
-
+	std::string isCookie = request.getCookie();
+	// std::cout << "isCookie: " << isCookie << "\n";
+	cgiArgv.push_back(isCookie);
     if(method == "GET" || method == "DELETE") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
 
-    std::vector<std::string>::iterator it;
+    // std::vector<std::string>::iterator it;
 
 	// for (it=cgiArgv.begin(); it!=cgiArgv.end(); it++)
 	// {
 	// 	std::cout << "cgiArgv: " << *it << "\n";
 	// }
+	std::string response = executeCgi(cgiArgv);
+	std::cout << "\n\n==================RESPONSE===================\n\n";
+	std::cout << response;
+	std::cout << "================================================\n\n";
 
-	return executeCgi(cgiArgv);
+	return response;
 }
 
 std::string Response::RequestHandler(Request& request) {

@@ -18,6 +18,8 @@ class Request {
         std::string _mappingUrl;
         //post
         std::string _boundary; 
+		//cookie
+		std::string _cookie;
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;
@@ -68,6 +70,7 @@ class Request {
         const std::string getAccept() const;
         const Location& getLocation() const;
         const std::string getContentType() const;
+        const std::string& getCookie() const;
 
         // 상태 확인 메소드들
         bool isChunked() const;  // chunked transfer-encoding 확인

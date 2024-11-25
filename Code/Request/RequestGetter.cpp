@@ -30,3 +30,4 @@ const std::string Request::getContentType() const {
     std::string type = typeHeader.substr(0, pos - 1);
     return type;
 }
+const std::string& Request::getCookie() const { return this->_cookie; }
