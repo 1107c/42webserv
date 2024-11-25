@@ -32,10 +32,19 @@ std::string Response::getErrorPath(int error) {
 	std::string path;
 	
 	std::map<std::string, std::string>	_error = _loc.getErrorPage();
+	// for (std::map<std::string, std::string>::iterator i = _error.begin(); i != _error.end(); ++i)
+	// {
+
+	// 	std::cout <<"fir:"<< (*i).first <<",sec:"<< (*i).second <<std::endl;	
+	// }
     std::map<std::string, std::string>::iterator it = _error.find(ToString(error));
     if (it != _error.end()) {
+		// std::cout <<"%%%%%1"<<it->second<<std::endl;	
+
         return it->second;
     }
+	// std::cout <<"%%%%%"<<error<<std::endl;	
+
 	return "ErrorHtml/404.html";
 }
 
