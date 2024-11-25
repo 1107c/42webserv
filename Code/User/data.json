@@ -1,36 +1,10 @@
 {
     "users": [
         {
-            "id": "er",
-            "salt": "fb2afce4e2337dd5a7b5cdb397283db7",
-            "password": "9ed792a51aa302ced9b6ab06952d59854985e461607dea0e85e622214509daa1"
-        },
-        {
-            "id": "err",
-            "salt": "ab8d31cf20e65f8d1ef40414a682b5d8",
-            "password": "e371c1089d078c18145d842bd15028b16f7b526e59fb9f53330ab4495e0dda1d"
-        },
-        {
-            "id": "ee",
-            "salt": "2e24e85073e3ac27dd8e5be280fc3da2",
-            "password": "2d9c9f2ab37a930d565c32ac7f31b8f51d2cfa097c141d33e2ec2159c59d8db6"
-        },
-        {
-            "id": "aaa",
-            "salt": "41824b9fe8098e84c0f84ad4605f5fb6",
-            "password": "2ddc70a693c410c1d4bf81151942369fd20abcfe9c9947d0fcb4efd3ac0a18f9"
-        },
-        {
-            "id": "11111",
-            "salt": "0b5ad2f46153a2a326693cbe0c67c726",
-            "password": "58b8ea75a01b9a507ee25099f4f9ee58dfc7f8f433c623e0e833ae314cfc93db"
+            "id": "ff",
+            "salt": "587f1109c30179e5e87a1459d4823883",
+            "password": "11eeb8332eac60eebc07f523b9aec99bb730195e0b622633171dfb24a5db9419"
         }
     ],
-    "sessions": [
-        {
-            "id": "11111",
-            "session_id": "11111_a6cf4928bcd20bfdf746d047edb43b24",
-            "expire_time": "Sun, 24 Nov 2024 03:09:18 +0000"
-        }
-    ]
+    "sessions": []
 }

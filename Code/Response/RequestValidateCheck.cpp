@@ -30,22 +30,29 @@ std::string Response::getErrorHeader(int error) {
 
 std::string Response::getErrorPath(int error) {
 	std::string path;
-	
-	std::map<std::string, std::string>	_error = _loc.getErrorPage();
-	// for (std::map<std::string, std::string>::iterator i = _error.begin(); i != _error.end(); ++i)
-	// {
-
-	// 	std::cout <<"fir:"<< (*i).first <<",sec:"<< (*i).second <<std::endl;	
-	// }
-    std::map<std::string, std::string>::iterator it = _error.find(ToString(error));
-    if (it != _error.end()) {
-		// std::cout <<"%%%%%1"<<it->second<<std::endl;	
-
-        return it->second;
-    }
-	// std::cout <<"%%%%%"<<error<<std::endl;	
-
-	return "ErrorHtml/404.html";
+	switch (error) {
+		case 403:
+			path = "ErrorHtml/403.html";
+			break ;
+		case 404:
+			path = "ErrorHtml/404.html";
+			break ;
+		case 405:
+			path = "ErrorHtml/405.html";
+			break ;
+		case 413:
+			path = "ErrorHtml/413.html";
+			break ;
+		case 500:
+			path = "ErrorHtml/500.html";
+			break ;
+		case 505:
+			path = "ErrorHtml/505.html";
+			break ;
+		default:
+			path = "ErrorHtml/404.html";
+	}
+	return path;
 }
 
 int Response::getValidate(Request& request) {
@@ -57,10 +64,9 @@ int Response::getValidate(Request& request) {
 		std::string temp =  path + index[i];
 		int errorTemp = checkPermissions(temp.c_str());
 		if (!errorTemp) {
-			std::cout << "temperoror ? " << errorTemp << std::endl;
 			request.setMappingUrl(temp);
 			return 0;
-		} else if (!error && errorTemp) error = errorTemp;
+		} else if (!loc.getAutoindex() && !error && errorTemp) error = errorTemp;
 	}
 	if (error) return error;
 	if (!loc.getAutoindex()) return 403;
@@ -75,6 +81,7 @@ int Response::validateRequest(Request& request) {
 	if (error) return error;
 	if (request.getMethod() == "GET" && isDirectory(path.c_str())) {
 		error = getValidate(request);
+	std::cout << "%%%%%%%%%%%%%%%\n" << path << " " << error << std::endl;
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
 		error = getValidate(request);

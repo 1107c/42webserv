@@ -57,20 +57,6 @@ html, body {
     white-space: nowrap;
 }
 
-.login {
-    margin: 0;
-    position: absolute;
-    font-weight: bold;
-	background-color: bisque;
-	background-position: center;
-	border-radius: 10px;
-    font-size: clamp(10px, 4vw, 15px);
-	text-align: center;
-    right: 20px;
-    top: 20px;
-    white-space: nowrap;
-}
-
 .authorize a {
     color: black;
     font-weight: bold;

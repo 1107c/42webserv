@@ -378,21 +378,6 @@ void Conf::updateLoc(Location &loc)
             loc.setIndex(tmp[i]);
         }
     }
-    // if (loc.getErrorPage().empty())
-    // {
-    //     std::map<std::string, std::string> tmp = firstLoc.getErrorPage();
-    //     std::map<std::string, std::string>::iterator it;
-    //     if (tmp.empty())
-    //     {
-    //         for (it = tmp.begin(); it != tmp.end(); ++it)
-    //             loc.setErrorPage(it->first, it->second);
-    //     }
-    //     else
-    //     {
-    //         for (it = tmp.begin(); it != tmp.end(); ++it)
-    //             loc.setErrorPage(it->first, it->second);
-    //     }
-    // }
 }
 
 

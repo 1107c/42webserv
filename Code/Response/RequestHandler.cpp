@@ -6,13 +6,10 @@ std::string Response::errorHandler(int error) {
 	std::string header = getErrorHeader(error);
 	std::ifstream file(path.c_str());
 	std::string html;
-	std::string response = header + "\r\n";
-	std::ostringstream ss;
-
 	if (!file.is_open()) {
-	    header = getErrorHeader(500);
-	    path = getErrorPath(500);
-	    html =
+        header = getErrorHeader(500);
+        path = getErrorPath(500);
+        html =
 	        "<!DOCTYPE html>\n"
 	        "<html>\n"
 	        "<head>\n"
@@ -23,16 +20,16 @@ std::string Response::errorHandler(int error) {
 	        "    500\n"
 	        "</body>\n"
 	        "</html>\n";
-	}
-	else
-	{
-		std::string line;
-		while (std::getline(file, line)) {
-			html += line + "\n";
-		}
-	}
+    } else {
+        std::string line;
+        while (std::getline(file, line)) {
+            html += line + "\n";
+        }
+    }
+	std::ostringstream ss;
 	ss << html.size();
-    std::cout << path << "\n" << header << std::endl;
+
+	std::string response = header + "\r\n";
 	response += "Content-Type: text/html; charset=UTF-8\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Connection: close\r\n";
@@ -78,56 +75,28 @@ std::string Response::autoIndexFile(const Request& request) {
 }
 
 std::string Response::autoIndexHandler(const Request& request) {
-    std::string mapPath;
-    if (request.getMyindex() == "/")
-        mapPath = _loc.getRoot();
-    else
-        mapPath = _loc.getRoot() + request.getMyindex();
+    std::string mapPath = request.getMappingUrl();
     DIR* dir = NULL;
     if (isDirectory(mapPath)) {
         dir = opendir(mapPath.c_str());
         if (!dir) {
             return errorHandler(500);
         }
-    } 
-    else if (!isDirectory(mapPath)) 
-    return autoIndexFile(request);
-
-    if (request.getPath() == "/")
-        dir = opendir(_loc.getRoot().c_str());
-    else
-        dir = opendir((_loc.getRoot() + request.getPath()).c_str());
-    std::cout <<"this is dir:"<<_loc.getRoot().c_str() <<","<<opendir(_loc.getRoot().c_str()) <<std::endl;
-    if (!dir) {
-            std::cout <<"sd\n";
-
-            return errorHandler(500);
-        }
+    } else if (!isDirectory(mapPath) && request.getLocation().getAutoindex()) return autoIndexFile(request);
     std::string result;
-
-    std::string path = request.getMyindex();
+    std::string path = request.getPath();
     struct dirent* entry;
-    std::string filename;
-
-    result += "<!DOCTYPE html>\n";
-    result += "<html lang=\"ko\">\n";
-    result += "    <head>\n";
-    result += "        <meta charset=\"UTF-8\">\n";
-    result += "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-    result += "        <title>42Webserv</title>";
-
-
-
     while ((entry = readdir(dir))) {
         if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue ;
 
-       filename = "";
+        std::string filename;
         if (path[path.size() - 1] != '/') {
             filename += '/';
         }
         filename += entry->d_name;
         std::string _path = path + filename;
-        std::string _mapPath = mapPath  +'/'+ filename;
+        std::string _mapPath = mapPath + filename;
+
         filename = entry->d_name;
         struct stat file_info;
         if (!stat(_mapPath.c_str(), &file_info)) {
@@ -143,20 +112,11 @@ std::string Response::autoIndexHandler(const Request& request) {
         }
     }
     closedir(dir);
-    std::string response;
-    result +="    </body>\n";
-    result +="</html>\n";
-    int size = result.size();
-
-    response += "HTTP/1.1 200 OK\r\n";
-    response += "Content-Length: " + ToString(size) + "\r\n";
-    response += "Connection: keep-alive\r\n";
-    response += getGMTDate() + "\r\n\r\n";
-    response += result;
-    return response;
+    return result;
 }
 std::string Response::redirectHandler(const std::string &mapPath, const std::string &code)
 {
+    std::cout << "###########3\n" << code << std::endl;
     std::string ss = code + " Moved Permanently";
     std:: string response = "HTTP/1.1 " + code + " Moved Permanently\r\n";
     response += "Content-Type: text/html\r\n";
@@ -172,11 +132,12 @@ std::string Response::redirectHandler(const std::string &mapPath, const std::str
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
     std::string html;
+
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(request);
-    } else if (checkDownload(mapPath) && _loc.getAutoindex()) {
+    } else if (checkDownload(mapPath) && request.getLocation().getAutoindex()) {
         return autoIndexHandler(request);
-    } else if (!checkDownload(mapPath) && _loc.getAutoindex()) {
+    } else if (!checkDownload(mapPath) && request.getLocation().getAutoindex()) {
         std::string _accept = reGetAccept(mapPath.substr(mapPath.find(".") + 1));
         return imageHandler(request, _accept);
     } else {
@@ -372,10 +333,13 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
         response.append(buffer, bytes);
     }
     close(fd[0]);
-
-    if (response.empty()) {
-        return errorHandler(500);
+    if (cgiArgv[0] == "/usr/bin/python3")
+    {
+        if (response.empty()) {
+            return errorHandler(500);
+        }
     }
+
     int status;
     waitpid(pid, &status, 0);
 
@@ -389,72 +353,35 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
 std::string Response::cgiHandler(Request& request)
 {
     std::vector<std::string> cgiArgv;
-    cgiArgv.push_back(_loc.getCgi()[0]);
+    cgiArgv.push_back(request.getLocation().getCgi()[0]);
     cgiArgv.push_back(request.getMappingUrl());
 
     std::string method = request.getMethod();
 
-    if(method == "GET" || method == "DELETE") getArgv(cgiArgv, request.getQuery());
+    if(method == "GET") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
-
-    std::vector<std::string>::iterator it;
-
-	// for (it=cgiArgv.begin(); it!=cgiArgv.end(); it++)
-	// {
-	// 	std::cout << "cgiArgv: " << *it << "\n";
-	// }
 
 	return executeCgi(cgiArgv);
 }
 
-bool Response::isAutoindex(const std::string &path)
-{
-    std::string root = _loc.getRoot();
-    std::vector<std::string> index = _loc.getIndex();
-
-    for (size_t i = 0; i != index.size(); ++i)
-    {
-        int permission; 
-        if (path =="/")
-           permission = checkPermissions(root + path + index[i]);
-        else
-            permission =checkPermissions(root + path + '/' + index[i]);
-        if (permission == 0)
-            return false;
-    }
-        std::cout<< "permission:"  << std::endl;
-    return true;
-}
-
-
 std::string Response::RequestHandler(Request& request) {
-    _loc = request.getLocation();
 	if (request.getPath().find(".ico") != std::string::npos) {
 		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
-    // if (!_loc.getRedirect().empty())
-    // {
-    //     return redirectHandler(_loc.getRedirect() , "302");
-    // }
-
-    
-    std::string mapdir;
-    mapdir = _loc.getRoot() + request.getMyindex();
-    // std::cout << "@@@@@"<<mapdir<<","<<request.getMyindex() <<std::endl;
-    if (isDirectory(mapdir) && request.getMyindex() == _loc.getPath()) {
-        if (mapdir[mapdir.size() - 1] != '/')
-            return redirectHandler("http://" + request.getHeader("Host") + request.getMyindex() + '/', "301");
+    if (!request.getLocation().getRedirect().empty())
+    {
+        return redirectHandler(request.getLocation().getRedirect() , "302");
+    }
+    if (isDirectory(request.getMappingUrl()) && request.getMappingUrl()[request.getMappingUrl().size() - 1] != '/') {
+        return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
     }
 	int error = validateRequest(request);
-    std::cout << "#####"<<error<<std::endl;
 	if (error) return errorHandler(error);
-    if (_loc.getAutoindex() && request.getIsAutoindex())
-    {
-        return autoIndexHandler(request);
-    }
-	if (!_loc.getCgi().empty())
+
+
+	if (!request.getLocation().getCgi().empty())
 	{
 		return(cgiHandler(request));
 	}

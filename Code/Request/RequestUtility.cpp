@@ -5,71 +5,23 @@ void Request::setError(int code) {
 }
 
 void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
-    //1. _path의 마지막 값이 / 인지 아닌지
-    // if (_location.getRedirect().empty() == false) {
-    //     _mappingUrl = _location.getRedirect();
-    // }
-    {
+    std::string temp;
 
-        std::string path, path2;
-        _isAutoindex = true;
-        path2 = _path;
-        _myIndex = _path;
-        if (_path[_path.size() - 1] == '/' && _path != "/")
-            path2 = _path.erase(_path.size() - 1);
-        if (path2 == _location.getPath() && _location.getIndex().empty())
-        {
-            _isAutoindex = false;
-            return ;
-        }
-        for (size_t i = 0; i < _location.getIndex().size(); ++i)
-        {
-            std::string temp;
-            path = "";
-            if (path2 == _location.getPath()) {
-                if (_location.getPath() == "/")
-                    path = _path + _location.getIndex()[i];
-                else
-                    path = _path + '/' + _location.getIndex()[i];
-            }
-            else
-                path = _path;
-            for (size_t i = 0, j = 0; i < path.size(); ++i) {
-                if (i && (temp[j] == '/' && path[i] == '/')) continue;
-                temp += path[i];
-                j++;
-            }
-            path = _location.getRoot() + temp;
-
-            if (!checkPermissions(path))
-            {
-                _isAutoindex = false;
-                _path = temp;
-                break;
-            }
-        }
-        _mappingUrl = path; // 아무것도 존재하지 않을 경우 뭘줘야하지..?
-
-
-
-		// std::cout << "\n\n====================TEST========================\n\n";
-		// std::cout << _path << "\n";
-		// std::cout << _location.getRoot() << "\n";
-		// std::cout << _location.getPath() << "\n";
-		// if (!_location.getCgi().empty())
-		// 	std::cout << _location.getCgi()[0] << "\n";
-		// if (!_location.getIndex().empty())
-		// 	std::cout << _location.getIndex()[0] << "\n";
-		// std::cout << "\n\n================================================\n\n";
+    for (size_t i = 0, j = 0; i < _path.size(); ++i) {
+        if (i && (temp[j] == '/' && _path[i] == '/')) continue;
+        temp += _path[i];
+        j++;
     }
+    _mappingUrl = _location.getRoot() + temp;
+    if (!_location.getCgi().empty())
+        _mappingUrl += '/';
 }
-
 
 bool Request::validateRequest() {
     int methodFindIdx = -1;
-    // std::cout <<"size :"<< _location.getRoot() <<std::endl;
+    std::cout <<"size :"<< _location.getRoot() <<std::endl;
     for(size_t methodIdx = 0; methodIdx < _location.getMethods().size(); methodIdx++) {
-        // std::cout <<"method :"<<this->getMethod()<<" :confmethod :"<<_location.getMethods()[methodIdx] <<std::endl;
+        std::cout <<"method :"<<this->getMethod()<<" :confmethod :"<<_location.getMethods()[methodIdx] <<std::endl;
         if (this->getMethod() == _location.getMethods()[methodIdx]) {
             methodFindIdx = methodIdx;
         }
@@ -92,15 +44,4 @@ void Request::setMappingUrl(std::string& path) {
 
 void Request::setBody(const std::string& body) {
     this->_body = body;
-}
-
-void Request::printHeaders(void) {
-	std::map<std::string, std::string>::iterator it;
-
-	std::cout << "\n\n=========Request Handler Headers=========\n\n";
-	for (it=_headers.begin(); it!=_headers.end(); it++)
-	{
-		std::cout << it->first << ": " << it->second << "\n";
-	}
-	std::cout << "\n\n=========================================\n\n";
 }

@@ -3,16 +3,15 @@
 ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(0),
  _root(""), _methods(), _autoidx(false), _index(), _error(), _isServer(true), _isAuto(false)
 {
-    _error["400"] = "/home/myeochoi/42webserv/Code/ErrorHtml/400.html";
-    _error["401"] = "/home/myeochoi/42webserv/Code/ErrorHtml/401.html";
-    _error["402"] = "/home/myeochoi/42webserv/Code/ErrorHtml/402.html";
-    _error["403"] = "/home/myeochoi/42webserv/Code/ErrorHtml/403.html";
-    _error["404"] = "/home/myeochoi/42webserv/Code/ErrorHtml/404.html";
-    _error["405"] = "/home/myeochoi/42webserv/Code/ErrorHtml/405.html";
-    _error["413"] = "/home/myeochoi/42webserv/Code/ErrorHtml/413.html";
-    _error["500"] = "/home/myeochoi/42webserv/Code/ErrorHtml/500.html";
-    _error["501"] = "/home/myeochoi/42webserv/Code/ErrorHtml/501.html";
-
+    _error["400"] = "ErrorHtml/400.html";
+    _error["401"] = "ErrorHtml/401.html";
+    _error["402"] = "ErrorHtml/402.html";
+    _error["403"] = "ErrorHtml/403.html";
+    _error["404"] = "ErrorHtml/404.html";
+    _error["405"] = "ErrorHtml/405.html";
+    _error["413"] = "ErrorHtml/413.html";
+    _error["500"] = "ErrorHtml/500.html";
+    _error["501"] = "ErrorHtml/501.html";
 }
 
 ServerBlock::ServerBlock(const ServerBlock &other): _host(other._host), _port(other._port), _server(other._server), _size(other._size),
@@ -133,14 +132,13 @@ bool ServerBlock::validatePath(const std::string& path)
    return true;
 }
 
-
 bool ServerBlock::setErrorPage(const std::string& num, const std::string& page)
 {    
     unsigned int numInt = strtoul(num);
-
+    
     if (numInt < 400 || numInt > 507 || !validatePath(page))
         return false;
-    _error[num] = page;
+    _error.insert(std::make_pair(num, page));
     return true;
 }
 

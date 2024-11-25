@@ -12,7 +12,6 @@ class Response {
         unsigned long long _contentLength;
         std::string getErrorPath(int error);
         std::string getErrorHeader(int error);
-        Location _loc;
 
     public:
         // 생성자
@@ -31,7 +30,7 @@ class Response {
         std::string cgiHandler(Request& request);
         std::string executeCgi(const std::vector<std::string>& cgiArgv);
         std::string redirectHandler(const std::string &mapPath, const std::string &code);
-        bool isAutoindex(const std::string &path);
+
 
         int validateRequest(Request& request);
         int getValidate(Request& request);

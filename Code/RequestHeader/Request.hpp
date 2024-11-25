@@ -32,8 +32,6 @@ class Request {
         // 파싱 관련 상태
         bool _isParsed;
         bool _isComplete;
-        bool _isAutoindex;
-        std::string _myIndex;
  
         // 에러 관리
         int _errorCode;
@@ -63,8 +61,6 @@ class Request {
         const std::string& getServerName() const;
         const std::string& getServerPort() const;
         const std::string& getMappingUrl() const;
-        const bool& getIsAutoindex() const;
-
         const std::map<std::string, std::string>& getHeaders() const;
         std::string getHeader(const std::string& key) const;
         int getServerBlockIdx() const;
@@ -72,8 +68,6 @@ class Request {
         const std::string getAccept() const;
         const Location& getLocation() const;
         const std::string getContentType() const;
-        const std::string getMyindex() const;
-
 
         // 상태 확인 메소드들
         bool isChunked() const;  // chunked transfer-encoding 확인
@@ -85,7 +79,6 @@ class Request {
 
 
         // Utility 메소드들
-		void printHeaders(void);
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
 		void setMappingUrl(std::string& path);
