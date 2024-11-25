@@ -6,13 +6,10 @@ std::string Response::errorHandler(int error) {
 	std::string header = getErrorHeader(error);
 	std::ifstream file(path.c_str());
 	std::string html;
-	std::string response = header + "\r\n";
-	std::ostringstream ss;
-
 	if (!file.is_open()) {
-	    header = getErrorHeader(500);
-	    path = getErrorPath(500);
-	    html =
+        header = getErrorHeader(500);
+        path = getErrorPath(500);
+        html =
 	        "<!DOCTYPE html>\n"
 	        "<html>\n"
 	        "<head>\n"
@@ -23,16 +20,16 @@ std::string Response::errorHandler(int error) {
 	        "    500\n"
 	        "</body>\n"
 	        "</html>\n";
-	}
-	else
-	{
-		std::string line;
-		while (std::getline(file, line)) {
-			html += line + "\n";
-		}
-	}
+    } else {
+        std::string line;
+        while (std::getline(file, line)) {
+            html += line + "\n";
+        }
+    }
+	std::ostringstream ss;
 	ss << html.size();
-    std::cout << path << "\n" << header << std::endl;
+
+	std::string response = header + "\r\n";
 	response += "Content-Type: text/html; charset=UTF-8\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Connection: close\r\n";
@@ -119,6 +116,7 @@ std::string Response::autoIndexHandler(const Request& request) {
 }
 std::string Response::redirectHandler(const std::string &mapPath, const std::string &code)
 {
+    std::cout << "###########3\n" << code << std::endl;
     std::string ss = code + " Moved Permanently";
     std:: string response = "HTTP/1.1 " + code + " Moved Permanently\r\n";
     response += "Content-Type: text/html\r\n";
@@ -380,7 +378,7 @@ std::string Response::cgiHandler(Request& request)
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/ksuh/goinfre/42webserv.4/Code/html/image/favi.ico";
+		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
@@ -388,13 +386,11 @@ std::string Response::RequestHandler(Request& request) {
     {
         return redirectHandler(request.getLocation().getRedirect() , "302");
     }
-    // std::string mapPath = request.getMappingUrl(); 
-    // if (isDirectory(mapPath)) {
-    //     if (mapPath[mapPath.size() - 1] != '/')
-    //         return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
-    // }
-	// int error = validateRequest(request);
-	// if (error) return errorHandler(error);
+    if (isDirectory(request.getMappingUrl()) && request.getMappingUrl()[request.getMappingUrl().size() - 1] != '/') {
+        return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
+    }
+	int error = validateRequest(request);
+	if (error) return errorHandler(error);
 
 
 	if (!request.getLocation().getCgi().empty())

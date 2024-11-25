@@ -64,10 +64,9 @@ int Response::getValidate(Request& request) {
 		std::string temp =  path + index[i];
 		int errorTemp = checkPermissions(temp.c_str());
 		if (!errorTemp) {
-			std::cout << "temperoror ? " << errorTemp << std::endl;
 			request.setMappingUrl(temp);
 			return 0;
-		} else if (!error && errorTemp) error = errorTemp;
+		} else if (!loc.getAutoindex() && !error && errorTemp) error = errorTemp;
 	}
 	if (error) return error;
 	if (!loc.getAutoindex()) return 403;
@@ -82,6 +81,7 @@ int Response::validateRequest(Request& request) {
 	if (error) return error;
 	if (request.getMethod() == "GET" && isDirectory(path.c_str())) {
 		error = getValidate(request);
+	std::cout << "%%%%%%%%%%%%%%%\n" << path << " " << error << std::endl;
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
 		error = getValidate(request);

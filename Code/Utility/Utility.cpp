@@ -58,7 +58,6 @@ std::string getGMTDate() {
 }
 
 void getArgv(std::vector<std::string>& argv, const std::string& str) {
-	// std::cout << str;
 	size_t size = 0;
 	size_t pos = str.find('=');
 	while (pos != std::string::npos) {

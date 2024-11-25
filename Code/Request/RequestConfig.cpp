@@ -61,7 +61,9 @@ int Request::getLocationBlock(int& serverBlockIdx) {
                 return j;
         }
         pos = str.rfind('/');
-        if (i + 1 != size)
+        if (pos == 0)
+            str = "/";
+        else if (i != size)
             str = str.substr(0, pos);
         else
             str = "/";

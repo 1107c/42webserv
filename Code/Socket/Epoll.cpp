@@ -137,10 +137,11 @@ void Epoll::handleRead(int &fd)
 {
     char buffer[5];
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
-	int	isend = 0;
-    static size_t contentLength, currentLength;
-    static Request request(&_config);
+    static size_t contentLength;
+    static size_t currentLength;
 	static size_t pos;
+    static Request request(&_config);
+	int isend;
 
     if (bytesRead > 0) {
         _result[fd].append(buffer, bytesRead);
@@ -149,7 +150,6 @@ void Epoll::handleRead(int &fd)
         	pos = _result[fd].find("\r\n\r\n");
         	if (_result[fd].size() >= 4 && pos != std::string::npos) {
 	            std::cout << "\n\n================== Request Message =====================\n\n";
-				// std::cout << fd << "\n";
 	            std::cout << _result[fd].substr(0, pos) << std::endl;
 				std::cout << "============================================================\n\n";
 	            if (!contentLength) {
@@ -175,38 +175,45 @@ void Epoll::handleRead(int &fd)
 		{
             std::cout << "\n\n----------------------------------\n";
 			std::cout << "End of request reached\n\n";
-            std::cout << "path: " << request.getPath() << std::endl;
-            std::cout << "root : " << request.getLocation().getRoot()<< std::endl;
-            std::cout << "Mapping url : " << request.getMappingUrl() << std::endl;
-			std::cout << "query: " << request.getQuery() << std::endl;
-			std::cout << "contentLength, currentLength: " << contentLength << " " << currentLength << std::endl;
-            std::cout <<"----------------------------------\n\n";
-            
-            Response response;
-            if (request.getErrorCode())
-                this->responseMessage = response.errorHandler(request.getErrorCode());
-            else
-                this->responseMessage = response.RequestHandler(request);
-            contentLength = 0;
-            currentLength = 0;
-			pos = 0;
-            request.reset(&_config);
-		    // std::cout << "\n\n================== TEST =====================\n\n";
-			// std::cout << fd << "\n";
-	        // std::cout << _result[fd].substr(0, pos) << std::endl;
-			// std::cout << "============================================================\n\n";
-            _result[fd].clear();
+	        size_t pos = _result[fd].find("\r\n\r\n");
+	        if (_result[fd].size() >= 4 && pos != std::string::npos) {
+	            std::cout << "=== Request Message ===\n";
+	            std::cout << _result[fd] << std::endl;
+	            if (!contentLength) {
+	                request.requestHandler(_result[fd]);
+	                contentLength = request.getContentLength();
+	            }
+	            if (!currentLength)
+	                currentLength = _result[fd].substr(pos + 4).length();
+	            else
+	                currentLength += bytesRead;
+	            std::cout <<"----------------------------------\n";
+	            std::cout << "path: " << request.getPath() << std::endl;
+	            std::cout << "root : " << request.getLocation().getRoot()<< std::endl;
+	            std::cout << "Mapping url : " << request.getMappingUrl() << std::endl;
+	            std::cout <<"----------------------------------\n";
+	            
+	            Response response;
+	            if (request.getErrorCode())
+	                this->responseMessage = response.errorHandler(request.getErrorCode());
+	            else
+	                this->responseMessage = response.RequestHandler(request);
+	            contentLength = 0;
+	            currentLength = 0;
+				pos = 0;
+	            request.reset(&_config);
+	            _result[fd].clear();
 
-
-            epoll_event ev;
-            ev.events = EPOLLOUT;
-            ev.data.fd = fd;
-            if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
-            {
-                handleClose(fd);
-                return;
-            }    
-        }
+	            epoll_event ev;
+	            ev.events = EPOLLOUT;
+	            ev.data.fd = fd;
+	            if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
+	            {
+	                handleClose(fd);
+	                return;
+	            }    
+	        }
+		}
     }
     else if (bytesRead == 0) {
         //evs.erase(fd);
@@ -214,8 +221,6 @@ void Epoll::handleRead(int &fd)
         close(fd);
     }
 }
-
-
 
 void Epoll::handleWrite(int &fd)
 {

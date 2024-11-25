@@ -318,20 +318,32 @@ void Conf::updateLoc(Location &loc)
     if (_server.back().front().getHost().empty())
         throw Conf::InputErrException(INVALID_FORMAT);
     if (loc.getHost().empty())
-        loc.setHost(firstLoc.getHost()); 
+    {
+        if (firstLoc.getHost().empty())
+            throw std::runtime_error("empty host");            
+        loc.setHost(firstLoc.getHost());
+    } 
     if (loc.getPort().empty())
     {
         if (_server.back().front().getPort().empty())
             throw Conf::InputErrException(INVALID_FORMAT);
         std::vector<unsigned int> tmp = firstLoc.getPort();
+        if (tmp.empty())
+                throw std::runtime_error("empty port");
         for (unsigned int i = 0; i != tmp.size(); ++i)
+        {
             loc.setPort(tmp[i]);
+        }
     }
     if (loc.getServerName().empty())
     {
         std::vector<std::string> tmp = firstLoc.getServerName();
+        if (tmp.empty())
+                throw std::runtime_error("empty servername");
         for (unsigned int i = 0; i != tmp.size(); ++i)
+        {
             loc.setServerName(tmp[i]);
+        }
     }
     if (loc.getClientMaxBodySize() == 0)
     {
@@ -343,25 +355,28 @@ void Conf::updateLoc(Location &loc)
             loc.setClientMaxBodySize(ss.str());
     }
     if (loc.getRoot().empty())
+    {
+        if (firstLoc.getRoot().empty())
+            throw std::runtime_error("empty root");
         loc.setRoot(firstLoc.getRoot());
+    }
     if (loc.getMethods().empty())
     {
         std::vector<std::string> tmp = firstLoc.getMethods();
+        if (tmp.empty())
+            throw std::runtime_error("empty method");
         for (unsigned int i = 0; i != tmp.size(); ++i)
+        {
             loc.setMethods(tmp[i]);
+        }
     }
     if (loc.getIndex().empty())
     {
         std::vector<std::string> tmp = firstLoc.getIndex();
         for (unsigned int i = 0; i != tmp.size(); ++i)
+        {
             loc.setIndex(tmp[i]);
-    }
-    if (loc.getErrorPage().empty())
-    {
-        std::map<std::string, std::string> tmp = firstLoc.getErrorPage();
-        std::map<std::string, std::string>::iterator it;
-        for (it = tmp.begin(); it != tmp.end(); ++it)
-            loc.setErrorPage(it->first, it->second);
+        }
     }
 }
 
