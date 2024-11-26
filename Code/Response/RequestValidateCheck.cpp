@@ -56,6 +56,8 @@ std::string Response::getErrorPath(int error) {
 }
 
 int Response::getValidate(Request& request) {
+	if (request.getPath() == "/uploaded")
+		return 0;
 	std::string path = request.getMappingUrl();
 	int error = 0;
 	Location loc = request.getLocation();
@@ -74,14 +76,17 @@ int Response::getValidate(Request& request) {
 }
 
 int Response::validateRequest(Request& request) {
+	std::cout << "validateRequest called\n";
 	std::string path = request.getMappingUrl();
 	std::string version = request.getVersion();
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") return 505;
 	int error = checkPermissions(path.c_str());
+	std::cout << "error: " << error << "\n";
 	if (error) return error;
-	if (request.getMethod() == "GET" && isDirectory(path.c_str())) {
+	std::string method(request.getMethod());
+	if ((method == "GET" && isDirectory(path.c_str())) || !request.getLocation().getCgi().empty()) {
 		error = getValidate(request);
-	std::cout << "%%%%%%%%%%%%%%%\n" << path << " " << error << std::endl;
+		std::cout << "%%%%%%%%%%%%%%%\n" << path << " " << error << std::endl;
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
 		error = getValidate(request);

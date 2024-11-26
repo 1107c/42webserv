@@ -34,6 +34,10 @@ class Response {
 
         int validateRequest(Request& request);
         int getValidate(Request& request);
+
+		std::string	postUploaded(Request& request, std::string &filename, const std::string &fileData);
+		bool removeAlInDirectory(const std::string& dirPath);
+
 };
 
 #endif

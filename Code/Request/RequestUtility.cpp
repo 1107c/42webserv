@@ -12,9 +12,10 @@ void Request::normalizedPath() { // 경로 정규화 (../와 ./ 처리)
         temp += _path[i];
         j++;
     }
-    _mappingUrl = _location.getRoot() + temp;
+	_mappingUrl = _location.getRoot() + temp;
     if (!_location.getCgi().empty())
         _mappingUrl += '/';
+    std::cout << "normalizePath mappingurl: " << _mappingUrl << "\n";
 }
 
 bool Request::validateRequest() {

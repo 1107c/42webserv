@@ -132,12 +132,32 @@ std::string Response::redirectHandler(const std::string &mapPath, const std::str
 std::string Response::textHandler(const Request& request, const std::string& accept) {
 	std::string mapPath = request.getMappingUrl();
     std::string html;
+
+	std::cout << "Tttttttttttttttttt\n" << mapPath << "\n";
+	std::cout << "isDir: " << isDirectory(mapPath) << "\n";
+	std::cout << "checkDownload: " << checkDownload(mapPath) << "\n";
+	// std::cout << "auto: " << request.getLocation().getAutoindex() << "\n";
+
+	if (request.getPath() == "/uploaded")
+	{
+		std::string body = "success\r\n";
+		std::string response = "HTTP/1.1 200 OK\r\n";
+	    response += "Content-Type: text/plain; charset=UTF-8\r\n";
+	    response += "Content-Length: 7\r\n";
+		response += "Date: " + getGMTDate() + "\r\n\r\n";
+		response += body;
+		std::cout << "===================== uploaded RESPONSE ======================\n\n";
+		std::cout << response << "\n";
+		std::cout << "======================================================\n";
+		return response;
+	}
 	if (isDirectory(mapPath)) {
         html = autoIndexHandler(request);
     } else if (checkDownload(mapPath) && request.getLocation().getAutoindex()) {
         return autoIndexHandler(request);
     } else if (!checkDownload(mapPath) && request.getLocation().getAutoindex()) {
-        std::string _accept = reGetAccept(mapPath.substr(mapPath.find(".") + 1));
+        std::string _accept = reGetAccept(mapPath.substr(mapPath.rfind(".") + 1));
+		// std::cout << "accept: " << _accept << "\n"; 
         return imageHandler(request, _accept);
     } else {
         std::ifstream file(request.getMappingUrl().c_str());
@@ -156,6 +176,10 @@ std::string Response::textHandler(const Request& request, const std::string& acc
     response += "Content-Length: " + ss.str() + "\r\n";
 	response += "Date: " + getGMTDate() + "\r\n\r\n";
     response += html;
+
+	std::cout << "===================== RESPONSE ======================\n\n";
+	std::cout << response << "\n";
+	std::cout << "======================================================\n";
 
     return response;
 }
@@ -197,15 +221,64 @@ std::string Response::imageHandler(const Request& request, const std::string& ac
     return response;
 }
 
+std::string	Response::postUploaded(Request& request, std::string &fileName, const std::string &fileData) {
+	std::cout << "postUploaded Function Called\n";
+	std::string userId, cookie;
+	size_t cookieLength;
+
+	cookie = request.getCookie();
+	cookieLength = cookie.length();
+	if (fileName.empty() || fileData.empty() || cookieLength < 34) {
+        return errorHandler(500);
+    }
+	userId = cookie.substr(0, cookieLength - 33);
+	if (access("uploaded", F_OK | W_OK) == -1) {  
+		std::cerr << "Directory 'uploaded' does not exist or is not writable" << std::endl;
+		return errorHandler(500);
+	}
+	std::string dirPath = request.getMappingUrl() + "/" + userId;
+	std::cout << "dirPath: " << dirPath << "\n";
+
+	struct stat info;
+	if (stat(dirPath.c_str(), &info) == -1)
+	{
+		//디렉토리가 없음
+		if (mkdir(dirPath.c_str(), 0777) == -1)
+		{
+			std::cerr << "디렉토리 생성 실패: " << strerror(errno) << std::endl;
+			return errorHandler(500);
+		} 
+		std::cout << "디렉토리 생성 성공: " << dirPath << std::endl;
+	} else if (info.st_mode & S_IFDIR) {
+		if (!removeAlInDirectory(dirPath))
+			return errorHandler(500);
+		std::cout << "디렉토리가 이미 존재합니다: " << dirPath << std::endl;
+	} else {
+		std::cerr << "디렉토리 생성 실패: 해당 경로에 디렉토리가 아님" << std::endl;
+		return errorHandler(500);
+	}
+
+	std::string filepath = "uploaded/" + userId + "/" + fileName;
+	std::cout<< "*************"<<std::endl;
+
+	std::ofstream outFile(filepath.c_str(), std::ios::binary);
+	if (!outFile.is_open()) {
+		std::cerr << "Failed to open file: " << filepath << std::endl;
+		return errorHandler(500);
+	}
+	outFile.write(fileData.c_str(), fileData.length());
+	outFile.close();
+    return textHandler(request, request.getAccept());
+}
+
 std::string Response::postHandler(Request& request) {
 
     const std::string& body = request.getBody();
     std::string boundary;
     
     size_t pos = 0;
-    std::string filename;
+    std::string fileName, fileData, userId;
     std::string contentType;
-    std::string fileData;
 
     pos = body.find("\r\n", pos);
     if (pos == std::string::npos)
@@ -214,9 +287,13 @@ std::string Response::postHandler(Request& request) {
 		return errorHandler(500);
 	}
 	boundary = body.substr(0, pos - 2);
-	std::cout <<boundary <<std::endl;
-    pos = pos + 2;  
-    	std::cout<< "@@@@@@3"<<std::endl;
+	// std::cout <<boundary <<std::endl;
+    pos = pos + 2;
+	std::string cookie = request.getCookie();
+	// std::cout << "cookie: " << cookie << "\n";
+	// userId = cookie.substr(0, cookie.length() - 33);
+    	// std::cout<< "@@@@@@3"<<std::endl;
+
     while (pos < body.length()) {
         size_t lineEnd = body.find("\r\n", pos);
         if (lineEnd == std::string::npos) break; //캐리지 못찾을시
@@ -228,7 +305,7 @@ std::string Response::postHandler(Request& request) {
                 fnPos += 10; 
                 size_t fnEnd = line.find("\"", fnPos);
                 if (fnEnd != std::string::npos) {
-                    filename = line.substr(fnPos, fnEnd - fnPos);
+                    fileName = line.substr(fnPos, fnEnd - fnPos);
                 }
             }
         }
@@ -248,39 +325,8 @@ std::string Response::postHandler(Request& request) {
         
         pos = lineEnd + 2;  // 다음 줄로 이동
     }
-	std::cout<< "&&&&&&&&&&&&&"<<std::endl;
-    if (filename.empty() || fileData.empty()) {
-        return errorHandler(500);
-    }
-	std::cout<< "||||||||||||||||"<<std::endl;
 
-	if (access("uploaded", F_OK | W_OK) == -1) {  
-		std::cerr << "Directory 'uploaded' does not exist or is not writable" << std::endl;
-		return errorHandler(500);
-	}
-
-	std::string filepath = "uploaded/uploaded_" + filename;
-
-	while (access(filepath.c_str(), F_OK) != -1) {
-		// 파일 확장자와 이름을 분리
-		size_t dotPos = filename.find_last_of(".");
-		std::string name = filename.substr(0, dotPos);
-		std::string ext = filename.substr(dotPos); 
-		
-		filename = name + "_copy" + ext;
-		filepath = "uploaded/uploaded_" + filename;
-	}
-	std::cout<< "*************"<<std::endl;
-
-	std::ofstream outFile(filepath.c_str(), std::ios::binary);
-	if (!outFile.is_open()) {
-		std::cerr << "Failed to open file: " << filepath << std::endl;
-		return errorHandler(500);
-	}
-	outFile.write(fileData.c_str(), fileData.length());
-	outFile.close();
-    
-    return textHandler(request, request.getAccept());
+	return postUploaded(request, fileName, fileData);
 }
 
 std::string Response::removeHandler(Request& request)
@@ -352,6 +398,8 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
 std::string Response::cgiHandler(Request& request)
 {
     std::vector<std::string> cgiArgv;
+
+	std::cout << "Final mapping: " << request.getMappingUrl() << "\n";
     cgiArgv.push_back(request.getLocation().getCgi()[0]);
     cgiArgv.push_back(request.getMappingUrl());
 
@@ -378,7 +426,7 @@ std::string Response::cgiHandler(Request& request)
 
 std::string Response::RequestHandler(Request& request) {
 	if (request.getPath().find(".ico") != std::string::npos) {
-		std::string fa = "/home/myeochoi/42webserv/Code/html/image/favi.ico";
+		std::string fa = "/home/ksuh/goinfre/42webserv.4/Code/html/image/favi.ico";
 		request.setMappingUrl(fa);
 		return imageHandler(request, "image/x-icon");
 	}
@@ -386,18 +434,20 @@ std::string Response::RequestHandler(Request& request) {
     {
         return redirectHandler(request.getLocation().getRedirect() , "302");
     }
-    if (isDirectory(request.getMappingUrl()) && request.getMappingUrl()[request.getMappingUrl().size() - 1] != '/') {
+    if (request.getPath() != "/uploaded" && isDirectory(request.getMappingUrl()) && request.getMappingUrl()[request.getMappingUrl().size() - 1] != '/') {
         return redirectHandler("http://" + request.getHeader("Host") + request.getPath() + '/', "301");
     }
 	int error = validateRequest(request);
+	std::cout << "error: " << error << "\n";
 	if (error) return errorHandler(error);
-
 
 	if (!request.getLocation().getCgi().empty())
 	{
+		std::cout << "getcig called\n";
 		return(cgiHandler(request));
 	}
 	if (request.getMethod() == "GET") {
+		std::cout << "request GET called\n";
 		std::string accept = request.getAccept();
 		if (accept.find("text") != std::string::npos) {
 			return textHandler(request, accept);
@@ -407,10 +457,64 @@ std::string Response::RequestHandler(Request& request) {
 			return textHandler(request, accept);
 		}
 	} else if (request.getMethod() == "POST") {
+		std::cout << "request POST called\n";
 		return postHandler(request);
 	} else if (request.getMethod() == "DELETE") {
+		std::cout << "request DELETE called\n";
 		return removeHandler(request);
-
 	}
 	return 0;
+}
+
+bool Response::removeAlInDirectory(const std::string& dirPath) {
+    DIR *dir = opendir(dirPath.c_str());
+    if (dir == NULL) {
+        std::cerr << "디렉토리 열기 실패: " << strerror(errno) << std::endl;
+        return false;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        std::string entry_name = entry->d_name;
+
+        // "."과 ".."은 무시
+        if (entry_name == "." || entry_name == "..") {
+            continue;
+        }
+
+        std::string full_path = dirPath + "/" + entry_name;
+        struct stat stat_buf;
+
+        if (stat(full_path.c_str(), &stat_buf) == 0) {
+            // 파일이면 삭제
+            if (S_ISREG(stat_buf.st_mode)) {
+                if (unlink(full_path.c_str()) != 0) {
+                    std::cerr << "파일 삭제 실패: " << strerror(errno) << std::endl;
+                    closedir(dir);
+                    return false;
+                }
+                std::cout << "파일 삭제: " << full_path << std::endl;
+            }
+            // 디렉토리이면 재귀적으로 삭제
+            else if (S_ISDIR(stat_buf.st_mode)) {
+                if (!removeAlInDirectory(full_path)) {
+                    closedir(dir);
+                    return false;
+                }
+                if (rmdir(full_path.c_str()) != 0) {
+                    std::cerr << "디렉토리 삭제 실패: " << strerror(errno) << std::endl;
+                    closedir(dir);
+                    return false;
+                }
+                std::cout << "디렉토리 삭제: " << full_path << std::endl;
+            }
+        } else {
+            std::cerr << "경로 확인 실패: " << strerror(errno) << std::endl;
+            closedir(dir);
+            return false;
+        }
+    }
+
+    closedir(dir);
+    return true;
 }

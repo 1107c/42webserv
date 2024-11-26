@@ -4,25 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SignIn Form</title>
-  <script>
-	(async function () {
-		try {
-			const response = await fetch('/check-id', {
-				method: 'GET'
-			});
-
-			const data = await response.json();
-			if (data.status == 'login')
-				window.location.href = '/';
-		} catch (error) {
-			console.log("error: ", error);
-			window.location.href = '/error';
-		}
-	}());
-  </script>
-
   <link rel="stylesheet" href="styles.css">
   <script>
+	(async function() {
+		setTimeout(async () => {
+			try {
+				const response = await fetch('/check-id', {
+					method: 'GET'
+				});
+
+				data = await response.json();
+				if (data.status == 'login')
+					window.location.href = '/';
+			} catch(error)
+			{
+				console.log(error);
+				window.location.href = '/error';
+			}
+		}, 10)
+	}());
+
 	function signup() {
 		window.location.href = '/signUp.html';
 	}

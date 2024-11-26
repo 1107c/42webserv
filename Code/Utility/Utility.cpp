@@ -115,5 +115,5 @@ std::string reGetAccept(const std::string& type) {
 	std::map<std::string, std::string>::iterator it = map.find(type);
 	if (it != map.end())
 		return it->second;
-	return "text/plain";
+	return "text/html";
 }

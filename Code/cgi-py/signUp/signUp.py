@@ -33,4 +33,4 @@ with open(file_path, 'w') as file:
 	json.dump(data, file, indent=4)
 
 body = "success"
-print(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}\r\n\r\n")
+print(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(body)}\r\n\r\n{body}\r\n\r\n")

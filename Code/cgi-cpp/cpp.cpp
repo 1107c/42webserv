@@ -11,7 +11,7 @@ int main() {
     std::ifstream file(tmp, std::ios::binary);
     if (!file) {
         std::cout << "HTTP/1.1 200 OK\r\n";
-        std::cout << "Content-Type: text/plain\r\n\r\n";
+        std::cout << "Content-Type: text/html\r\n\r\n";
         std::cout << "Error: Cannot open image file";
         return 1;
     }

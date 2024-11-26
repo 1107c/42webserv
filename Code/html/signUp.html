@@ -4,34 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup Form</title>
-  <script>
-	(async function () {
-		try {
-			const response = await fetch('/check-id', {
-				method: 'GET'
-			});
-
-			const data = await response.json();
-			if (data.status == 'login')
-				window.location.href = '/';
-		} catch (error) {
-			console.log("error: ", error);
-			window.location.href = '/error';
-		}
-	}());
-  </script>
   <link rel="stylesheet" href="styles.css">
 
   <script>
-<<<<<<< HEAD
+	(async function() {
+		setTimeout(async () => {
+			try {
+				const response = await fetch('/check-id', {
+					method: 'GET'
+				});
+
+				data = await response.json();
+				if (data.status == 'login')
+					window.location.href = '/';
+			} catch(error)
+			{
+				console.log(error);
+				window.location.href = '/error';
+			}
+		}, 10)
+	}());
 	function signin() {
 		window.location.href = '/signIn.html';
 	}
 
     document.addEventListener('DOMContentLoaded', async function() {
-=======
-    document.addEventListener('DOMContentLoaded', function() {
->>>>>>> 09d0b5767aef176d45393bc091ca3070f80ac859
         const checkButton = document.querySelector('.btn-check');
         const submitButton = document.querySelector('button[type="submit"]');
         const usernameInput = document.getElementById('username');
@@ -39,13 +36,13 @@
         let isUsernameVerified = false;  // 아이디 검증 상태를 저장
 
         // 처음에는 가입하기 버튼 비활성화
-        submitButton.disabled = true;
+        // submitButton.disabled = true;
 		checkButton.disabled = true;
 
         // 아이디 입력창이 변경되면 다시 검증 필요
         usernameInput.addEventListener('input', function() {
             isUsernameVerified = false;
-            submitButton.disabled = true;
+            // submitButton.disabled = true;
 
 			if (usernameInput.value.trim() !== '') {
 				checkButton.disabled = false;
@@ -64,6 +61,7 @@
 					method: 'GET'
 				});
 				const status = await response.text();
+				console.log("status: ", status);
 
 				if (status === 'available') {
 					alert('사용 가능한 아이디입니다.');
@@ -78,13 +76,18 @@
 				alert('확인 중 오류가 발생했습니다.');
 			}
             isUsernameVerified = result == 0 ? true : false;
-			submitButton.disabled = result == 0 ? false : true;
+			// submitButton.disabled = result == 0 ? false : true;
         });
 
         // 폼 제출 이벤트
         document.querySelector('form').addEventListener('submit', async function(event) {
 			event.preventDefault();  // 폼 제출 중지
 
+			if (!isUsernameVerified)
+			{
+				alert("아이디 중복검사를 해주세요.");
+				return;
+			}
             if (this.submitted) return;
             this.submitted = true;
 
@@ -119,7 +122,8 @@
 					body: requestBody
 				});
 			
-				const result = await response.text();		
+				const result = await response.text();
+				console.log("result: ", result);	
 				if (result === 'success') {
 					alert('회원가입에 성공하셨습니다!');
 					window.location.href = '/signIn.html';
@@ -153,6 +157,9 @@
         <button type="submit">가입하기</button>
       </div>
     </form>
+	<div class="form-group"></div>
+		<button onclick="signin()">로그인</button>
+	</div>
   </div>
 </body>
 </html>

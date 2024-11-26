@@ -35,10 +35,10 @@ try:
 				"status": "fail",
 				}
 	body = json.dumps(body)
-	print(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n{cookie}{body}")
+	print(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(body)}\r\n{cookie}{body}")
 
 except FileNotFoundError:
 	body = json.dumps({
 		"status": "fail",
 		})
-	print(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}")
+	print(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(body)}\r\n\r\n{body}")
