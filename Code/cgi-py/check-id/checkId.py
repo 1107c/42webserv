@@ -35,7 +35,8 @@ try:
 		if match:
 			body = {
 				"status": 'login',
-				"id": login_id
+				"id": login_id,
+				"path": sys.argv[2],
 				}
 		else:
 			body = {

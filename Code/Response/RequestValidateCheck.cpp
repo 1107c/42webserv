@@ -56,14 +56,14 @@ std::string Response::getErrorPath(int error) {
 }
 
 int Response::getValidate(Request& request) {
-	if (request.getPath() == "/uploaded")
+	if (!strncmp(request.getPath().c_str(), "/uploaded", 9))
 		return 0;
 	std::string path = request.getMappingUrl();
 	int error = 0;
 	Location loc = request.getLocation();
 	const std::vector<std::string>& index = request.getLocation().getIndex();
 	for (size_t i = 0; i < index.size(); ++i) {
-		std::string temp =  path + index[i];
+		std::string temp =  urlDecode(path + index[i]);
 		int errorTemp = checkPermissions(temp.c_str());
 		if (!errorTemp) {
 			request.setMappingUrl(temp);
@@ -77,7 +77,7 @@ int Response::getValidate(Request& request) {
 
 int Response::validateRequest(Request& request) {
 	std::cout << "validateRequest called\n";
-	std::string path = request.getMappingUrl();
+	std::string path = urlDecode(request.getMappingUrl());
 	std::string version = request.getVersion();
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") return 505;
 	int error = checkPermissions(path.c_str());

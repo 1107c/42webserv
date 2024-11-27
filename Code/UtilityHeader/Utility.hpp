@@ -25,5 +25,6 @@ void getArgv(std::vector<std::string>& argv, const std::string& str);
 std::string createContentLength(const std::string& str);
 bool checkDownload(const std::string& path);
 std::string reGetAccept(const std::string& type);
+std::string urlDecode(const std::string& str);
 
 #endif

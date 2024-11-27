@@ -25,7 +25,36 @@ bool isDirectory(const std::string& path) {
 	return false;
 }
 
+// URL 디코딩 함수
+std::string urlDecode(const std::string& str) {
+    std::string result;
+    char ch;
+    int hexValue;
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%') {
+            if (i + 2 < str.length() &&
+                std::isxdigit(str[i + 1]) &&
+                std::isxdigit(str[i + 2])) {
+                std::istringstream iss(str.substr(i + 1, 2));
+                iss >> std::hex >> hexValue;
+                ch = static_cast<char>(hexValue);
+                result += ch;
+                i += 2;
+            }
+        } else if (str[i] == '+') {
+            result += ' ';
+        } else {
+            result += str[i];
+        }
+    }
+	std::cout << "result: " << result << "\n";
+    return result;
+}
+
 int checkPermissions(const std::string& path) {
+	// std::string decodedPath = urlDecode(path);
+	// std::cout << "checkPermissions path: " << decodedPath << "\n";
+	std::cout << "checkPermissions path: " << path << "\n";
 	if (!access(path.c_str(), F_OK)) {
 		if (!access(path.c_str(), R_OK)) return 0;
 		else return 403;

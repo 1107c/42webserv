@@ -16,6 +16,7 @@
 			<div class="header" id="user-info" style="display:none;">
 				<div class="profile">
 					<img src="image/gyeongju.jpeg" alt="Profile Picture" id="profile-picture">
+					<!-- <img src="/uploaded/aaa/download.jpeg" alt="Profile Picture" id="profile-picture"> -->
 					<span class="profile-id" id="user-id"></span>
 					<button class="logout-btn" id="logout-button">Logout</button>
 				</div>
@@ -51,10 +52,14 @@
 							});
 	
 							data = await response.json();
+							console.log("data: ", data);
 							if (data.status == 'login') {
 								document.getElementById('login-signup').style.display = 'none';
 								document.getElementById('user-info').style.display = 'block';
 								document.getElementById('user-id').textContent = data.id;
+								const path = data.path ? data.path : ""
+								if (path)
+									document.getElementById("profile-picture").src = path;
 							}
 							else
 							{

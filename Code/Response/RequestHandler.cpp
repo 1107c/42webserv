@@ -185,7 +185,7 @@ std::string Response::textHandler(const Request& request, const std::string& acc
 }
 
 std::string Response::imageHandler(const Request& request, const std::string& accept) {
-	std::ifstream file(request.getMappingUrl().c_str(), std::ios::binary);
+	std::ifstream file(urlDecode(request.getMappingUrl()).c_str(), std::ios::binary);
     if (!file.is_open()) return errorHandler(500);
 
     // 파일 크기 확인
@@ -218,6 +218,7 @@ std::string Response::imageHandler(const Request& request, const std::string& ac
 		response.append(&buffer[0], bytes_read);
 	}
 
+	std::cout << "imageHandler finished!\n";
     return response;
 }
 
@@ -405,11 +406,36 @@ std::string Response::cgiHandler(Request& request)
 
     std::string method = request.getMethod();
 	std::string isCookie = request.getCookie();
-	// std::cout << "isCookie: " << isCookie << "\n";
+	std::cout << "isCookie: " << isCookie << "\n";
 	cgiArgv.push_back(isCookie);
     if(method == "GET" || method == "DELETE") getArgv(cgiArgv, request.getQuery());
     else if (method == "POST") getArgv(cgiArgv, request.getBody());
 
+	std::string userId, path;
+	path = request.getPath();
+	size_t userIdLength = isCookie.length();
+	if (userIdLength > 33)
+		userId = isCookie.substr(0, userIdLength - 33);
+	std::cout << "userId: " << userId << "\n";
+	if (!userId.empty() && !strncmp(path.c_str(), "/check-id", 9))
+	{
+		std::string dirPath = "uploaded/" + userId;
+		std::cout << "upload dirpath: " << dirPath << "\n";
+		DIR* dir = opendir(dirPath.c_str());  // 디렉토리 열기
+		if (dir != NULL)
+		{
+			struct dirent* entry;
+		    while ((entry = readdir(dir)) != NULL) {  // 디렉토리 항목 읽기
+		        // '.' 및 '..' 항목을 제외한 실제 파일만 출력
+		        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+					std::cout << "filename: " << entry->d_name << "\n";
+		            cgiArgv.push_back(dirPath + "/" + entry->d_name);
+					break ;
+		        }
+		    }
+			closedir(dir);
+		}
+	}
     // std::vector<std::string>::iterator it;
 
 	// for (it=cgiArgv.begin(); it!=cgiArgv.end(); it++)
