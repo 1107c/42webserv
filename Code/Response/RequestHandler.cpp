@@ -396,6 +396,35 @@ std::string Response::executeCgi(const std::vector<std::string>& cgiArgv)
     return response;
 }
 
+bool Response::copyImage(const std::string& sourcePath, const std::string& destinationPath) {
+    // 바이너리 모드로 파일 열기
+    std::ifstream sourceFile(sourcePath.c_str(), std::ios::binary);
+    std::ofstream destinationFile(destinationPath.c_str(), std::ios::binary);
+
+    if (!sourceFile) {
+        std::cerr << "Error: Could not open source file: " << sourcePath << std::endl;
+        return false;
+    }
+
+    if (!destinationFile) {
+        std::cerr << "Error: Could not open destination file: " << destinationPath << std::endl;
+        return false;
+    }
+
+    // 버퍼를 사용하여 데이터를 읽고 쓰기
+    char buffer[1024];
+    while (sourceFile.read(buffer, sizeof(buffer))) {
+        destinationFile.write(buffer, sourceFile.gcount());
+    }
+    // 남은 데이터 쓰기
+    destinationFile.write(buffer, sourceFile.gcount());
+
+    sourceFile.close();
+    destinationFile.close();
+
+    return true;
+}
+
 std::string Response::cgiHandler(Request& request)
 {
     std::vector<std::string> cgiArgv;
@@ -435,6 +464,20 @@ std::string Response::cgiHandler(Request& request)
 		    }
 			closedir(dir);
 		}
+        else
+        {
+            if (mkdir(dirPath.c_str(), 0777) == -1)
+            {
+                std::cerr << "회원가입 디렉토리 생성 실패: " << strerror(errno) << std::endl;
+                return errorHandler(500);
+            }
+            if (!copyImage("./html/image/gyeongju.jpeg", dirPath + "/gyeongju.jpeg"))
+            {
+                std::cerr << "회원가입 이미지 생성 실패: " << strerror(errno) << std::endl;
+                return errorHandler(500);
+            }
+            cgiArgv.push_back(dirPath + "/gyeongju.jpeg");
+        }
 	}
     // std::vector<std::string>::iterator it;
 

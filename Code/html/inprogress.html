@@ -15,7 +15,7 @@
             </nav>
 			<div class="header" id="user-info" style="display:none;">
 				<div class="profile">
-					<img src="image/gyeongju.jpeg" alt="Profile Picture" id="profile-picture">
+					<img src="image/gyeongju.jpeg" alt="Profile Picture" id="profile-picture" onclick="home()">
 					<!-- <img src="/uploaded/aaa/download.jpeg" alt="Profile Picture" id="profile-picture"> -->
 					<span class="profile-id" id="user-id"></span>
 					<button class="logout-btn" id="logout-button">Logout</button>
@@ -74,17 +74,8 @@
 					}, 10)
 				}());
 
-				function deleteAllCookies() {
-				    // 현재 도메인에 저장된 쿠키 목록 가져오기
-				    const cookies = document.cookie.split(";");
-
-				    // 각 쿠키 삭제
-				    for (let cookie of cookies) {
-				        const name = cookie.split("=")[0].trim(); // 쿠키 이름 추출
-
-				        // 현재 경로(`/`)에서 삭제
-				        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-				    }
+				function home() {
+					window.location.href = '/home.html';
 				}
 		
 				document.getElementById('logout-button').addEventListener('click', async function(event) {

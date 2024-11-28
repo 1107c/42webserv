@@ -263,7 +263,7 @@ html, body {
 }
 
 .profile img:hover {
-    cursor: url("/home.html"), auto;
+  cursor: pointer;
 	transform: scale(1.1);
 }
 

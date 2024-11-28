@@ -37,6 +37,7 @@ class Response {
 
 		std::string	postUploaded(Request& request, std::string &filename, const std::string &fileData);
 		bool removeAlInDirectory(const std::string& dirPath);
+        bool copyImage(const std::string& sourcePath, const std::string& destinationPath);
 
 };
 
