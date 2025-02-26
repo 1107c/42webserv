@@ -1,19 +1,5 @@
 #include "../UtilityHeader/Utility.hpp"
 
-int ft_strncmp(std::string _path, std::string _configPath) {
-    // int i = -1;
-    // for(i = 0; _path[i] && _configPath[i]; i++) {
-    //     if (_path[i] != _configPath[i])
-    //         break;
-    // }
-	int i= 0;
-	while (_path[i] && _configPath[i] && _configPath[i] == _path[i])
-		++i;
-	if (_path[i])
-		return -1;
-    return i;
-}
-
 bool isDirectory(const std::string& path) {
 	struct stat info;
 
@@ -25,38 +11,12 @@ bool isDirectory(const std::string& path) {
 	return false;
 }
 
-// URL 디코딩 함수
-std::string urlDecode(const std::string& str) {
-    std::string result;
-    char ch;
-    int hexValue;
-    for (size_t i = 0; i < str.length(); ++i) {
-        if (str[i] == '%') {
-            if (i + 2 < str.length() &&
-                std::isxdigit(str[i + 1]) &&
-                std::isxdigit(str[i + 2])) {
-                std::istringstream iss(str.substr(i + 1, 2));
-                iss >> std::hex >> hexValue;
-                ch = static_cast<char>(hexValue);
-                result += ch;
-                i += 2;
-            }
-        } else if (str[i] == '+') {
-            result += ' ';
-        } else {
-            result += str[i];
-        }
-    }
-	std::cout << "result: " << result << "\n";
-    return result;
-}
-
 int checkPermissions(const std::string& path) {
-	// std::string decodedPath = urlDecode(path);
-	// std::cout << "checkPermissions path: " << decodedPath << "\n";
-	std::cout << "checkPermissions path: " << path << "\n";
+	std::cout << "path:" <<path <<",access:"<<access(path.c_str(), F_OK)<< std::endl;
 	if (!access(path.c_str(), F_OK)) {
-		if (!access(path.c_str(), R_OK)) return 0;
+		if (!access(path.c_str(), R_OK)) {
+			return 0;	
+		}
 		else return 403;
 	}
 	return 404;
@@ -109,9 +69,7 @@ void getArgv(std::vector<std::string>& argv, const std::string& str) {
 }
 
 std::string createContentLength(const std::string& str) {
-	size_t pos = str.find("\r\n\r\n");
-	size_t size = str.substr(pos + 4).length();
-
+	size_t size = str.length();
 	std::string result = "Content-Length: " + ToString(size) + "\r\n";
 	return result;
 }
@@ -144,5 +102,30 @@ std::string reGetAccept(const std::string& type) {
 	std::map<std::string, std::string>::iterator it = map.find(type);
 	if (it != map.end())
 		return it->second;
-	return "text/html";
+	return "text/plain";
+}
+
+// URL 디코딩 함수
+std::string urlDecode(const std::string& str) {
+    std::string result;
+    char ch;
+    int hexValue;
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%') {
+            if (i + 2 < str.length() &&
+                std::isxdigit(str[i + 1]) &&
+                std::isxdigit(str[i + 2])) {
+                std::istringstream iss(str.substr(i + 1, 2));
+                iss >> std::hex >> hexValue;
+                ch = static_cast<char>(hexValue);
+                result += ch;
+                i += 2;
+            }
+        } else if (str[i] == '+') {
+            result += ' ';
+        } else {
+            result += str[i];
+        }
+    }
+    return result;
 }

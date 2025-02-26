@@ -15,8 +15,8 @@ ServerBlock::ServerBlock() : _host(""), _port(), _server(), _size(0),
 }
 
 ServerBlock::ServerBlock(const ServerBlock &other): _host(other._host), _port(other._port), _server(other._server), _size(other._size),
- _root(other._root), _methods(other._methods), _autoidx(other._autoidx), _index(other._index), _error(other._error),
- _isServer(other._isServer), _isAuto(other._isAuto)
+ _root(other._root), _methods(other._methods), _autoidx(other._autoidx), _index(other._index), _error(other._error), _errormap(other._errormap),
+ _isServer(other._isServer), _isAuto(other._isAuto),_alias(other._alias)
 {
 }
 
@@ -35,6 +35,8 @@ ServerBlock &ServerBlock::operator&=(const ServerBlock &other)
         _error = other._error;
 		_isServer = other._isServer;
 		_isAuto = other._isAuto;
+        _alias = other._alias;
+        _errormap = other._errormap;
     }
     return *this;
 }
@@ -42,6 +44,12 @@ ServerBlock &ServerBlock::operator&=(const ServerBlock &other)
 ServerBlock::~ServerBlock()
 {
 }
+
+void ServerBlock::setMaxBodySize(const unsigned int &value)
+{
+    _size = value ;
+}
+
 
 unsigned int ServerBlock::strtoul(const std::string &value)
 {
@@ -103,15 +111,19 @@ bool ServerBlock::setClientMaxBodySize(const std::string &value)
 {
     char *end;
 
-	if (_size)
+	if (_size) {
 		return false;
+    }
     unsigned long size = std::strtoul(value.c_str(), &end, 10);
     if (*end == 'M')
         size *= 1024 * 1024;
     else if (*end == 'K')
         size *= 1024;
-    if (size == 0 || size > MAX_BODY_SIZE || (*end && *(end + 1)))
+    if (size == 0 || size > MAX_BODY_SIZE || (*end && *(end + 1))) {
+    // if (size == 0 || (*end && *(end + 1))) {
+        std::cout << "this!\n" << size << " " << MAX_BODY_SIZE << std::endl;
         return false;
+    }
     _size = size;
     return true;
 }
@@ -125,7 +137,7 @@ bool ServerBlock::validatePath(const std::string& path)
    for (size_t i = 0; i < path.length(); i++)
    {
        char c = path[i];
-       if ((!isalnum(c) && c != '.' && c != '/' && c != '-' && c != '+') || 
+       if ((!isalnum(c) && c != '.' && c != '/' && c != '-' && c != '+' && c != '_') || 
        (i > 1 && c == '/' && path[i - 1] == '/'))
            return false;
    }
@@ -138,7 +150,10 @@ bool ServerBlock::setErrorPage(const std::string& num, const std::string& page)
     
     if (numInt < 400 || numInt > 507 || !validatePath(page))
         return false;
-    _error.insert(std::make_pair(num, page));
+    _error[num] = page;
+    _errormap.push_back(num);
+    std::cout << "asd" << _errormap.size() <<std::endl;
+    // _error.insert(std::make_pair(num, page));
     return true;
 }
 
@@ -164,7 +179,7 @@ bool ServerBlock::setIndex(const std::string& index)
 }
 bool ServerBlock::setMethods(const std::string& methods)
 {
-    if (!(methods == "GET" || methods == "POST" || methods == "DELETE"))
+    if (!(methods == "GET" || methods == "POST" || methods == "DELETE"|| methods == "PUT"))
         return false;
     if (std::find(_methods.begin(), _methods.end(), methods) != _methods.end())
         return false; 
@@ -219,6 +234,11 @@ const bool &ServerBlock::getAutoindex() const
 const bool &ServerBlock::getIsServer() const
 {
     return _isServer;
+}
+
+const std::vector<std::string> &ServerBlock::getErrmap() const
+{
+    return _errormap;
 }
 
 void ServerBlock::reset() {

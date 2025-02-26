@@ -11,18 +11,11 @@ bool Request::parse(const std::string& rawRequest) {
 
         //2. start line 파싱
         ssize_t firstLine = rawRequest.find("\r\n");
-        if (headerEnd == std::string::npos) {
-            setError(400);
-            return false;
-        }
-
         std::string startLine = rawRequest.substr(0, firstLine);
         if (!parseStartLine(startLine)) {
             setError(400);
             return false;
         }
-
-
 
         //3. 헤더 파싱
         std::string headers = rawRequest.substr(firstLine + 2, headerEnd - firstLine - 2);
@@ -112,7 +105,7 @@ bool Request::parseHeaders(const std::string& headerSection) {
         return false;
     }
 
-	if (this->_headers.count("Cookie")) {
+    if (this->_headers.count("Cookie")) {
 		try {
             std::string cookie;
             std::istringstream iss(this->_headers.at("Cookie"));
@@ -121,13 +114,15 @@ bool Request::parseHeaders(const std::string& headerSection) {
                 return (false);
             }
             //문자열 쪼개기
-            size_t colonPos = cookie.find("=");
-            if (colonPos == std::string::npos) {
-                setError(400);
-                return false;
+            size_t startPos = cookie.find("session_id=");
+            if (startPos == std::string::npos) {
+                return true;
             }
-            this->_cookie = cookie.substr(colonPos + 1);
-			// std::cout << "Cookie: " << _cookie << "\n";
+            size_t endPos =  cookie.find(";", startPos + 1);
+            if (endPos == std::string::npos)
+                this->_cookie = cookie.substr(startPos + 11);
+            else
+                this->_cookie = cookie.substr(startPos + 11, endPos - (startPos + 11));
         } catch (...) {
             setError(400);
             return false;
@@ -139,13 +134,10 @@ bool Request::parseHeaders(const std::string& headerSection) {
 
 bool Request::parseBody(const std::string& bodyContent) {
     if (isChunked()) {
-        //chunked encoding 처리
         return parseChunkedBody(bodyContent);
     } else if (this->_contentLength > 0) {
         //일반 바디 처리
-        std::cout << bodyContent << std::endl << "BodyLength: " << bodyContent.length() << " contentLength: " << this->_contentLength << std::endl;
         if (bodyContent.length() != this->_contentLength) {
-            std::cout << "가끔씩 post를 여러번 하다보면 requestparse.cpp 여기서 오류가 발생함 원인 불명" <<std::endl;
             setError(400);
             return false;
         }
@@ -154,10 +146,34 @@ bool Request::parseBody(const std::string& bodyContent) {
     return true;
 }
 
-//구현해야함
+int hexToDecimal(std::string s) {
+    int i;
+    std::istringstream iss(s);
+    iss >> std::hex >> i;
+    return i;
+}
+
 bool Request::parseChunkedBody(const std::string& chunkedBody) {
-    (void)chunkedBody;
-    return (true);
+	std::string s = chunkedBody;
+
+	while(true) {
+		size_t sizeEnd = s.find("\r\n");
+		std::string curSizeLine = s.substr(0, sizeEnd);
+		size_t curSize = hexToDecimal(curSizeLine);
+
+		if (curSize == 0) break;
+	
+		s = s.substr(sizeEnd + 2);
+		size_t lineEnd = s.find("\r\n");
+		if (lineEnd != std::string::npos) {
+			std::string chunk = s.substr(0, lineEnd);
+			if (chunk.length() != curSize)
+				return false;
+			
+			s = s.substr(lineEnd + 2);
+		} else break;
+	}
+	return true;
 }
 
 void Request::parseQueryString(const std::string& url) {

@@ -30,63 +30,78 @@ std::string Response::getErrorHeader(int error) {
 
 std::string Response::getErrorPath(int error) {
 	std::string path;
-	switch (error) {
-		case 403:
-			path = "ErrorHtml/403.html";
-			break ;
-		case 404:
-			path = "ErrorHtml/404.html";
-			break ;
-		case 405:
-			path = "ErrorHtml/405.html";
-			break ;
-		case 413:
-			path = "ErrorHtml/413.html";
-			break ;
-		case 500:
-			path = "ErrorHtml/500.html";
-			break ;
-		case 505:
-			path = "ErrorHtml/505.html";
-			break ;
-		default:
-			path = "ErrorHtml/404.html";
-	}
-	return path;
+	std::map<std::string, std::string>	_error = _loc.getErrorPage();
+    std::map<std::string, std::string>::iterator it = _error.find(ToString(error));
+    if (it != _error.end()) {
+		std::string errorPage = it->second;
+		if (access(errorPage.c_str(), F_OK | R_OK) == -1)
+			return "ErrorHtml/404.html";
+        return it->second;
+    }
+	return "ErrorHtml/404.html";
 }
 
 int Response::getValidate(Request& request) {
-	if (!strncmp(request.getPath().c_str(), "/uploaded", 9))
+	if (!request.getLocation().getCgi().empty())
 		return 0;
 	std::string path = request.getMappingUrl();
 	int error = 0;
 	Location loc = request.getLocation();
-	const std::vector<std::string>& index = request.getLocation().getIndex();
+	int flag = 0;
+	for (size_t i = 0; i < loc.getIndex().size(); ++i) {
+		std::string temp =  urlDecode(path + loc.getIndex()[i]);
+		int errorTemp = checkPermissions(temp.c_str());
+		if (errorTemp == 0)
+		{
+			flag = 1;
+			break;
+		}
+	}
+	if ((loc.getIndex().empty() || flag == 0) && request.getMethod() == "GET")
+		loc.setIndex("index.html");
+	const std::vector<std::string>& index = loc.getIndex();
+	std::cout << index.size() <<std::endl;	
 	for (size_t i = 0; i < index.size(); ++i) {
 		std::string temp =  urlDecode(path + index[i]);
 		int errorTemp = checkPermissions(temp.c_str());
+		if (!loc.getIndex().empty() && errorTemp == 404 && loc.getAlias().empty())
+		{
+			errorTemp = 403;
+		}
 		if (!errorTemp) {
 			request.setMappingUrl(temp);
 			return 0;
 		} else if (!loc.getAutoindex() && !error && errorTemp) error = errorTemp;
 	}
 	if (error) return error;
-	if (!loc.getAutoindex()) return 403;
+	if (isDirectory(path) && !loc.getAutoindex()) return 403;
 	return 0;
 }
 
 int Response::validateRequest(Request& request) {
-	std::cout << "validateRequest called\n";
 	std::string path = urlDecode(request.getMappingUrl());
 	std::string version = request.getVersion();
+	int error;
+	if (request.getPath() == "/upload")
+	{
+		std::string userId = request.getCookie();
+		int length = userId.length();
+		if (length < 33)
+			return 404;
+		int error = checkPermissions("upload/" + userId.substr(0, length - 33));
+		return error;
+	}
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") return 505;
-	int error = checkPermissions(path.c_str());
-	std::cout << "error: " << error << "\n";
-	if (error) return error;
-	std::string method(request.getMethod());
-	if ((method == "GET" && isDirectory(path.c_str())) || !request.getLocation().getCgi().empty()) {
+	if (request.getLocation().getCgi().empty())
+	{
+		error = checkPermissions(path.c_str());
+		if (error) 
+		{
+			return error;
+		}
+	}
+	if (request.getMethod() == "GET" && isDirectory(path.c_str())) {
 		error = getValidate(request);
-		std::cout << "%%%%%%%%%%%%%%%\n" << path << " " << error << std::endl;
 		if (error) return error;
 	} else if (request.getMethod() == "POST") {
 		error = getValidate(request);

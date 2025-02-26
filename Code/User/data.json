@@ -1,51 +1,16 @@
 {
     "users": [
         {
-            "id": "er",
-            "salt": "fb2afce4e2337dd5a7b5cdb397283db7",
-            "password": "9ed792a51aa302ced9b6ab06952d59854985e461607dea0e85e622214509daa1"
-        },
-        {
-            "id": "err",
-            "salt": "ab8d31cf20e65f8d1ef40414a682b5d8",
-            "password": "e371c1089d078c18145d842bd15028b16f7b526e59fb9f53330ab4495e0dda1d"
-        },
-        {
-            "id": "ee",
-            "salt": "2e24e85073e3ac27dd8e5be280fc3da2",
-            "password": "2d9c9f2ab37a930d565c32ac7f31b8f51d2cfa097c141d33e2ec2159c59d8db6"
-        },
-        {
-            "id": "aaa",
-            "salt": "41824b9fe8098e84c0f84ad4605f5fb6",
-            "password": "2ddc70a693c410c1d4bf81151942369fd20abcfe9c9947d0fcb4efd3ac0a18f9"
-        },
-        {
-            "id": "bbb",
-            "salt": "d1412d1274106ba9233fdc7360ced4d6",
-            "password": "12c4161f7990c68a91182295c3f38482359f8e6c37852be41302d995c1e1dffd"
-        },
-        {
-            "id": "ccc",
-            "salt": "03d984b5b931967492eab4e8da80d74f",
-            "password": "8117ed940893c98345426e21b3e972886286d139a2dc1bdde7ef91eac9cbb1df"
-        },
-        {
-            "id": "cc",
-            "salt": "465f9e728f3956db557d234a5b094129",
-            "password": "87456d4141e3c9b3f02593412866069b1590fcf41acfb75fc4f0f81c299bea61"
-        },
-        {
-            "id": "qqq",
-            "salt": "525fdff08dc9eb105dd44a25bf9c844f",
-            "password": "03c987531771b82fcac5de66655dafec3f13f84c41ab78a3b06ecf5bc1058551"
+            "id": "asd",
+            "salt": "2c9bd528071c631ac98feec3dfc01eed",
+            "password": "46f6edc4cd830ac2d02e60c3af99404e87e51c6438da207cccbd34446772860d"
         }
     ],
     "sessions": [
         {
-            "id": "qqq",
-            "session_id": "qqq_d93395aa2acc8efbdd51cf40aca7472e",
-            "expire_time": "Thu, 28 Nov 2024 08:09:43 +0000"
+            "id": "asd",
+            "session_id": "asd_f518375d9dcd5382ec67cebef4461210",
+            "expire_time": "Wed, 26 Feb 2025 11:50:05 +0000"
         }
     ]
 }

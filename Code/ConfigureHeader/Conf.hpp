@@ -25,6 +25,7 @@ enum ConfigType {
     PATH,
     CGI_PATH,
     REDIRECT,
+    ALIAS
 };
 
 class Conf

@@ -1,4 +1,4 @@
-#include "Epoll.hpp"
+ #include "Epoll.hpp"
 
 
 Epoll::Epoll(const Conf& config) : _config(config.getServerBlocks()), _epollfd(0), _socket(), _result(), _pendingResponses()
@@ -110,101 +110,92 @@ int Epoll::isServerSocket(int &fd)
 
 void Epoll::handleNewConnection(int &fd)
 {
-    // while (1)
-    // {
-        sockaddr addr;
-        socklen_t sockSize = sizeof(addr);
-        int clientSock = accept(fd, (struct sockaddr*)&addr, &sockSize);
-        if (clientSock == -1)
-        {
-        //    if (errno == EAGAIN || errno == EWOULDBLOCK) 
-        //         break;
-            throw std::runtime_error("client accept failed");
-        }
+    sockaddr addr;
+    socklen_t sockSize = sizeof(addr);
+    int clientSock = accept(fd, (struct sockaddr*)&addr, &sockSize);
+    if (clientSock == -1)
+    {
+        throw std::runtime_error("client accept failed");
+    }
 
-        epoll_event ev;
-        ev.events = EPOLLIN;
-        ev.data.fd = clientSock;
-        if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, clientSock, &ev ) == -1)
-        {
-            close(clientSock);
-            throw std::runtime_error("client register failed");
-        } 
-    // }
+    epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = clientSock;
+    if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, clientSock, &ev ) == -1)
+    {
+        close(clientSock);
+        throw std::runtime_error("client register failed");
+    } 
 }
 
 void Epoll::handleRead(int &fd)
 {
-    char buffer[5];
+    char buffer[1000000];
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
-    static size_t contentLength;
-    static size_t currentLength;
-	static size_t pos;
-    static Request request(&_config);
-	int isend = 0;
+    Response response;
+    int error = 0;
 
     if (bytesRead > 0) {
         _result[fd].append(buffer, bytesRead);
-		if (currentLength == contentLength)
-		{
-        	pos = _result[fd].find("\r\n\r\n");
-        	if (_result[fd].size() >= 4 && pos != std::string::npos) {
-	            std::cout << "\n\n================== Request Message =====================\n\n";
-	            std::cout << _result[fd].substr(0, pos) << std::endl;
-				std::cout << "============================================================\n\n";
-	            if (!contentLength) {
-	                request.requestHandler(_result[fd]);
-	                contentLength = request.getContentLength();
-	            }
-				if (contentLength)
-	                currentLength = _result[fd].substr(pos + 4).length();
-				else
-					isend = 1;
-			}
-		}
-		else
-		{
-			currentLength += bytesRead;
-			if (currentLength >= contentLength)
-			{
-				isend = 1;
-				request.setBody(_result[fd].substr(pos + 4));
-			}
-		}
-		if (isend)
-		{
-            std::cout << "\n\n----------------------------------\n";
-			std::cout << "End of request reached\n\n";
-
-            std::cout <<"----------------------------------\n";
-            std::cout << "path: " << request.getPath() << std::endl;
-            std::cout << "root : " << request.getLocation().getRoot()<< std::endl;
-            std::cout << "Mapping url : " << request.getMappingUrl() << std::endl;
-            std::cout <<"----------------------------------\n";
+        size_t pos = _result[fd].find("\r\n\r\n");
+        if (_result[fd].size() >= 4 && pos != std::string::npos) {
             
-            Response response;
-            if (request.getErrorCode())
-                this->responseMessage = response.errorHandler(request.getErrorCode());
-            else
-                this->responseMessage = response.RequestHandler(request);
-            contentLength = 0;
-            currentLength = 0;
-			pos = 0;
-            request.reset(&_config);
-            _result[fd].clear();
-
-            epoll_event ev;
-            ev.events = EPOLLOUT;
-            ev.data.fd = fd;
-            if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
+            if (!conLeng[fd]) {
+                request[fd] = Request(&_config);
+                request[fd].requestHandler(_result[fd]);
+                error = request[fd].getErrorCode();
+                if (error)
+                    this->responseMessage[fd] = response.errorHandler(request[fd].getErrorCode());
+                conLeng[fd] = request[fd].getContentLength();
+            }
+            if (!currentLeng[fd])
             {
-                handleClose(fd);
-                return;
-            }    
-		}
+                currentLeng[fd] = _result[fd].substr(pos + 4).length();
+            }
+            else
+                currentLeng[fd] += bytesRead;
+            if (request[fd].isChunked() && _result[fd].find("0\r\n\r\n") == std::string::npos) return ;
+            if (!conLeng[fd] || conLeng[fd] == currentLeng[fd]) {
+                std::cout << "\n=================== REQUEST ====================\n" << _result[fd].substr(0, pos) << "\n";
+                std::cout << "================================================\n\n";
+                std::cout << "error code: " << error << "\n\n";
+                if (!error)
+                {
+                    std::string body = _result[fd].substr(pos + 4);
+                    if (request[fd].isChunked())
+                        request[fd].setChunkedBody(body);
+                    else
+                        request[fd].setBody(body);
+                    if (request[fd].getLocation().getClientMaxBodySize() < request[fd].getBody().length())
+                    {
+                        this->responseMessage[fd] = response.errorHandler(413);
+                    }
+                    else
+                    {   
+                        this->responseMessage[fd] = response.RequestHandler(request[fd]);
+                    }
+                }
+                conLeng[fd] = 0;
+                currentLeng[fd] = 0;
+                request[fd].reset(&_config);
+                _result[fd].clear();
+                epoll_event ev;
+                ev.events = EPOLLOUT;
+                ev.data.fd = fd;
+                if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1)
+                {
+                    handleClose(fd);
+                    return;
+                }
+            }
+        }
     }
     else if (bytesRead == 0) {
-        //evs.erase(fd);
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+    }
+    else {
+        std::cout << "error: " << strerror(errno) << "\n";
         epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
         close(fd);
     }
@@ -212,35 +203,32 @@ void Epoll::handleRead(int &fd)
 
 void Epoll::handleWrite(int &fd)
 {
-    if (_pendingResponses.find(fd) == _pendingResponses.end())
-    {
-        _pendingResponses[fd] = this->responseMessage;
-        // std::cout << "=============== response =============== \n";
-		// std::cout << this->responseMessage << std::endl;
-		// std::cout << "======================================";
+    int bytes_sent = send(fd, responseMessage[fd].c_str(), responseMessage[fd].size(), 0);
 
-        // std::string restemp = responseMessage.substr(0, responseMessage.find("\r\n\r\n"));
-        // std::cout << this->responseMessage << std::endl;
-        // std::cout << restemp << std::endl;
-
-    }
-    size_t to_send = std::min(_pendingResponses[fd].size(), static_cast<size_t>(5));
-    int bytes_sent = send(fd, _pendingResponses[fd].c_str(), to_send, 0);
     if (bytes_sent > 0)
     {
-        _pendingResponses[fd] = _pendingResponses[fd].substr(bytes_sent);
+        responseMessage[fd] = responseMessage[fd].substr(bytes_sent);
 
-        if (_pendingResponses[fd].empty())
+        if (responseMessage[fd].empty())
         {
-            _pendingResponses.erase(fd);
-            _result.clear();
+            responseMessage.erase(fd);
             epoll_event ev;
             ev.events = EPOLLIN;
             ev.data.fd = fd;
             epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev);
         }
     }
+    else if (bytes_sent == 0) {
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+    }
+    else {
+        std::cout << "error: " << strerror(errno) << "\n";
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+    }
 }
+
 
 void Epoll::handleClose(int &fd)
 {
@@ -249,7 +237,6 @@ void Epoll::handleClose(int &fd)
         _result.erase(fd);
     close(fd);
     std::cout << "Client disconnected: fd " << fd << std::endl;
-    // throw std::runtime_error("the client has been disconnected.");
 }
 
 void Epoll::registerSeverSocket()
@@ -288,7 +275,9 @@ void Epoll::initClient()
                 if (events[i].events & EPOLLOUT)
                     handleWrite(sock);
                 if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
+                {   
                     handleClose(sock);
+                }
             }
         }
     }

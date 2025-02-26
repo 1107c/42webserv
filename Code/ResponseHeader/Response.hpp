@@ -12,6 +12,7 @@ class Response {
         unsigned long long _contentLength;
         std::string getErrorPath(int error);
         std::string getErrorHeader(int error);
+        Location _loc;
 
     public:
         // 생성자
@@ -28,16 +29,14 @@ class Response {
         std::string autoIndexHandler(const Request& request);
         std::string removeHandler(Request& request);
         std::string cgiHandler(Request& request);
-        std::string executeCgi(const std::vector<std::string>& cgiArgv);
+        std::string executeCgi(const std::vector<std::string>& cgiArgv, Request &request);
         std::string redirectHandler(const std::string &mapPath, const std::string &code);
-
-
+        void responseNormalized(std::string& response);
         int validateRequest(Request& request);
         int getValidate(Request& request);
+        std::string	postUploaded(Request& request, std::string &fileName, const std::string &fileData);
+        bool removeAllInDirectory(const std::string& dirPath);
 
-		std::string	postUploaded(Request& request, std::string &filename, const std::string &fileData);
-		bool removeAlInDirectory(const std::string& dirPath);
-        bool copyImage(const std::string& sourcePath, const std::string& destinationPath);
 
 };
 

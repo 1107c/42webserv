@@ -29,9 +29,3 @@ int Request::getErrorCode() const {
 size_t Request::getContentLength() const {
     return this->_contentLength;
 }
-
-bool Request::isMethodAllowed(const std::vector<std::string>& allowedMethods) const {
-    //구현 필요
-    (void)allowedMethods;
-    return true;
-}

@@ -16,10 +16,9 @@ class Request {
         std::string _serverName; 
         std::string _port;  
         std::string _mappingUrl;
+        std::string _cookie; 
         //post
         std::string _boundary; 
-		//cookie
-		std::string _cookie;
 
         // 헤더와 바디
         std::map<std::string, std::string> _headers;
@@ -78,14 +77,13 @@ class Request {
         bool hasError() const;
         int getErrorCode() const;
         size_t getContentLength() const;  // Content-Length 값 반환
-        bool isMethodAllowed(const std::vector<std::string>& allowedMethods) const;
-
 
         // Utility 메소드들
         void debug(); //안에 내용 출력
         void setError(int code);  // 에러 설정
 		void setMappingUrl(std::string& path);
         void setBody(const std::string& body);
+        void setChunkedBody(const std::string& body);
         void reset(const std::vector<std::vector<Location> > *conf);
 
         //config 파일이랑 연결

@@ -24,9 +24,6 @@ CONFIGURE = ./Configure/Conf.cpp ./Configure/Location.cpp ./Configure/ServerBloc
 REQUEST = ./Request/debug.cpp ./Request/Request.cpp ./Request/RequestGetter.cpp ./Request/RequestParse.cpp ./Request/RequestStatus.cpp ./Request/RequestUtility.cpp ./Request/RequestConfig.cpp
 SOCKET = ./Socket/Epoll.cpp ./Socket/main.cpp
 
-METHOD = $(GET)
-GET = ./Method/GET/GetCheckRedirection.cpp ./Method/GET/GetHandler.cpp ./Method/GET/GetHandlerGetter.cpp ./Method/GET/GetHandlerUtility.cpp
-
 RESPONSE = ./Response/RequestHandler.cpp ./Response/RequestValidateCheck.cpp
 INC_DIR := .
 SRCS := $(CONFIGURE) $(REQUEST) $(SOCKET) $(METHOD) $(RESPONSE) $(UTILITY)
@@ -41,6 +38,8 @@ $(NAME) :
 	@make start --no-print-directory
 	@$(C++) $(CFLAGS) $(OBJS) -iquote $(INC_DIR) -o $(NAME)
 	@echo "  Completed! "
+	chmod +x start.sh
+	bash start.sh
 
 start : $(OBJS)
 

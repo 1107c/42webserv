@@ -14,8 +14,10 @@ class ServerBlock
 		bool	_autoidx;
 		std::vector<std::string>	_index;
 		std::map<std::string, std::string>	_error;
-		bool						_isServer;
+		std::vector<std::string>	_errormap;		
+        bool						_isServer;
 		bool						_isAuto;
+        std::string _alias;
         static const unsigned int MAX_BODY_SIZE = 2097152; 
     public :
         ServerBlock();
@@ -28,11 +30,20 @@ class ServerBlock
         bool setPort(unsigned int port);
         bool setServerName(const std::string& server);
         bool setClientMaxBodySize(const std::string &value);
+        void setMaxBodySize(const unsigned int &value);
+const std::vector<std::string> &getErrmap() const;
+
         bool setErrorPage(const std::string& num, const std::string& page);
         bool setRoot(const std::string& root);
         bool setIndex(const std::string& index);
         bool setMethods(const std::string& methods);
         bool setAutoindex(const std::string& autoindex);
+        bool setAlias(const std::string& alias)
+        {
+            _alias = alias;
+            return true;
+        }
+
 
         const std::string &getHost() const;
         const std::vector<unsigned int> &getPort() const;
@@ -40,6 +51,7 @@ class ServerBlock
         const unsigned int &getClientMaxBodySize() const;
         const std::map<std::string, std::string> &getErrorPage() const;
         const std::string &getRoot() const;
+        const std::string &getAlias() const{ return _alias;}
         const std::vector<std::string> &getIndex() const;
         const std::vector<std::string> &getMethods() const;
         const bool &getAutoindex() const;

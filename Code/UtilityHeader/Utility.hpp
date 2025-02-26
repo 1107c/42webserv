@@ -20,11 +20,10 @@ bool isDirectory(const std::string& path);
 int checkPermissions(const std::string& path);
 std::string setNormalizedPath(const std::string& _path, const std::string& _root);
 std::string getGMTDate();
-int ft_strncmp(std::string _path, std::string _configPath);
 void getArgv(std::vector<std::string>& argv, const std::string& str);
-std::string createContentLength(const std::string& str);
 bool checkDownload(const std::string& path);
 std::string reGetAccept(const std::string& type);
+std::string createContentLength(const std::string& str);
 std::string urlDecode(const std::string& str);
 
 #endif

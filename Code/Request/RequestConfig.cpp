@@ -45,6 +45,16 @@ bool Request::getConfigOption() {
 }
 
 int Request::getLocationBlock(int& serverBlockIdx) {
+    size_t dotpos = _path.rfind('.');
+    if (dotpos != std::string::npos) {
+        size_t endpos = _path.find('?', dotpos);
+        if (endpos == std::string::npos) endpos = _path.length();
+        std::string type = _path.substr(dotpos, endpos);
+        for (size_t i = 0; i < (*_conf)[serverBlockIdx].size(); ++i) {
+            if ((*_conf)[serverBlockIdx][i].getPath() == type)
+                return i;
+        }
+    }
     size_t size = 0;
     size_t pos = _path.rfind('/');
     std::string temp = _path;
@@ -58,7 +68,9 @@ int Request::getLocationBlock(int& serverBlockIdx) {
     for (size_t i = 0; i <= size; ++i) {
         for (size_t j = 0; j < (*_conf)[serverBlockIdx].size(); ++j) {
             if ((*_conf)[serverBlockIdx][j].getPath() == str)
+            {
                 return j;
+            }
         }
         pos = str.rfind('/');
         if (pos == 0)

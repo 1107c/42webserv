@@ -18,21 +18,17 @@ Request::~Request(){
 }
 
 bool Request::requestHandler(const std::string& rawRequest) {
-	std::cout << "RH DEBUG 1\n";
     if (parse(rawRequest) == false) {
         if (getErrorCode() == 0)
             setError(400);    
         return false;
     }
-	std::cout << "RH DEBUG 2\n";
     if (getConfigOption() == false) {
         return false;
     }
-	std::cout << "RH DEBUG 3\n";
     if (validateRequest() == false) {
         return false;
     }
-	std::cout << "RH DEBUG 4\n";
     _isParsed = true;
     normalizedPath();
     // debug();

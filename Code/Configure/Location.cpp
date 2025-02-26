@@ -35,16 +35,16 @@ void Location::setServer(void)
 
 bool Location::setPath(const std::string& path)
 {
-    if (!validatePath(path))
-        return false;
+    // if (!validatePath(path))
+    //     return false;
     _path = path;
     return true;
 }
 
 bool Location::setCgi(const std::string& cgi)
 {
-    if (!validatePath(cgi))
-        return false;
+    // if (!validatePath(cgi))
+    //     return false;
     _cgi.push_back(cgi);
     return true;
 }

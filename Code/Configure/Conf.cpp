@@ -50,6 +50,7 @@ Conf::Conf(const std::string &file) : _file(file.c_str()), _line("")
     _confMap["path"] = PATH;
     _confMap["cgi_path"] = CGI_PATH;
     _confMap["redirect"] = REDIRECT;
+    _confMap["alias"] = ALIAS;
 }
 
 Conf::Conf(const Conf &other) : _line(other._line)
@@ -175,6 +176,10 @@ bool    Conf::switchCase(const std::string &key, const std::string &val)
             return _back->setCgi(val);
         case REDIRECT:
             return _back->setRedirect(val);
+        case ALIAS:
+        {
+            return _back->setAlias(val);
+        }
         default :
             return false;
     }
@@ -196,8 +201,9 @@ bool    Conf::parseCommon(const std::string &key, const std::string &value, std:
         }
         if (*i != ';')
         {
-            if (!switchCase(key, val))
+            if (!switchCase(key, val)) {
                 return false;
+            }
         val = "";
         }
     }
@@ -206,8 +212,9 @@ bool    Conf::parseCommon(const std::string &key, const std::string &value, std:
 
 bool    Conf::putBlock(const std::string &key, const std::string &value, std::string::const_iterator &i)
 {
-    if (_confMap[key] != ERROR_PAGE)
+    if (_confMap[key] != ERROR_PAGE) {
         return parseCommon(key, value, i);
+    }
     return parseErrorpage(value, i);
 }
 
@@ -252,22 +259,25 @@ bool    Conf::parseLine(std::string::const_iterator &i)
         _back = &_block.back();
         return true;
     }
-    if (!allowConf(key))
+    if (!allowConf(key)) {
         return false;
+    }
     if (parseLoc(key, start, i))
         return true;
     while (*i && isSpace(i)) {++i;}
     start = i;
     while (*i && *i != ';' && !isspace(*i)) {++i;}
-    if (!putBlock(key, std::string(start, i), i))
+    if (!putBlock(key, std::string(start, i), i)) {
         return false;
+    }
     return *(i++) == ';';
 }
 
 bool    Conf::parseBlock(std::string::const_iterator &i)
 {
-    if (!isFirstLine(i))
+    if (!isFirstLine(i)) {
         return false;
+    }
     else
     {
         _block.push_back(Location());
@@ -276,8 +286,9 @@ bool    Conf::parseBlock(std::string::const_iterator &i)
     }
     while (!isFirstLine(i) && *i)
     {
-        if (!parseLine(i))
+        if (!parseLine(i)) {
             return false;
+        }
         if (*i)
             ++i;
     }
@@ -294,25 +305,31 @@ bool    Conf::parseBlock(std::string::const_iterator &i)
 void Conf::parseConf()
 {
     makeLine();
-    if (!checkBrace())
+    if (!checkBrace()) {
         throw Conf::InputErrException(INVALID_FORMAT);
+    }
     std::string::const_iterator i = _line.begin();
     while (i != _line.end())
     {
-        if (!parseBlock(i))
+        if (!parseBlock(i)) {
             throw Conf::InputErrException(INVALID_FORMAT);
+        }
         if (*i)
             ++i;
     }
+    // std::cout << "22"<<_server[0][5].getAutoindex() << std::endl;
+    // std::cout << _server[0][5].getAlias() << std::endl;
+
+
+
     organizeServerBlocks();
-    // printConfig();
+    printConfig();
+
 }
 
 void Conf::updateLoc(Location &loc)
 {
-    if (_server.back().empty())
-        return;
-        
+
     Location &firstLoc = _server.back().front();
     
     if (_server.back().front().getHost().empty())
@@ -350,14 +367,14 @@ void Conf::updateLoc(Location &loc)
         std::stringstream ss;
         ss << firstLoc.getClientMaxBodySize();
         if (ss.str() == "0")
-            loc.setClientMaxBodySize("1048576");
+            loc.setMaxBodySize(1000000000);
         else
             loc.setClientMaxBodySize(ss.str());
     }
-    if (loc.getRoot().empty())
+    if (loc.getRoot().empty() && loc.getAlias().empty())
     {
-        if (firstLoc.getRoot().empty())
-            throw std::runtime_error("empty root");
+        if (firstLoc.getRoot().empty() && firstLoc.getAlias().empty())
+            throw std::runtime_error("empty root or alias");
         loc.setRoot(firstLoc.getRoot());
     }
     if (loc.getMethods().empty())
@@ -372,12 +389,39 @@ void Conf::updateLoc(Location &loc)
     }
     if (loc.getIndex().empty())
     {
+        // if (firstLoc.getIndex().empty())
+        // {
+        //     loc.setIndex("index.html");
+        //     return ;
+
+        // }
         std::vector<std::string> tmp = firstLoc.getIndex();
         for (unsigned int i = 0; i != tmp.size(); ++i)
         {
             loc.setIndex(tmp[i]);
         }
     }
+
+    for (size_t i = 0; firstLoc.getErrmap().size() != i; ++i)
+    {
+        int flag = 0;
+         for (size_t j = 0; loc.getErrmap().size() != j; ++j)
+         {
+            if (firstLoc.getErrmap()[i] == loc.getErrmap()[j])
+            {
+                flag = 1;
+          
+            }
+            
+         }
+        if (flag == 0)
+        {
+            std::map<std::string, std::string> tmp= firstLoc.getErrorPage();
+            loc.setErrorPage(firstLoc.getErrmap()[i], tmp[firstLoc.getErrmap()[i]]);
+        }
+    }
+
+
 }
 
 
@@ -385,19 +429,31 @@ void Conf::organizeServerBlocks()
 {
     _server.clear();
     _server.push_back(std::vector<Location>());
-    
     for (size_t i = 0; i < _block.size(); ++i)
     {
         if (!_block[i].getHost().empty() && !_server.back().empty())
         {
             _server.push_back(std::vector<Location>());
             _server.back().push_back(_block[i]);
+            // std::cout << "asd"<<_block[i].getAlias()<<std::endl;
         }
         else
         {
+            if (_server.back().empty())
+            {
+                _server.back().push_back(_block[i]);
+                continue;
+            }
             updateLoc(_block[i]);
-            _server.back().push_back(_block[i]);
+
+_server.back().push_back(_block[i]);
+
         }
+    }
+    for (int i = 0; _server[i].size(); ++i)
+    {
+        if (_server[i].size() == 1 && _server[i][0].getRoot().empty() && _server[i][0].getAlias().empty())
+            throw std::runtime_error("empty root or alias");
     }
 }
 
@@ -488,7 +544,10 @@ void Conf::printConfig() {
 
             std::cout << "  Redirect: " << loc.getRedirect() << "\n";
 
-            std::cout << "\n";
+            // std::cout << "\n";
+            // std::cout << "  Alias: " << loc.getAlias() << "\n";
+
+            // std::cout << "\n";
         }
     }
     std::cout << "\n========== End of Configuration ==========\n\n";
