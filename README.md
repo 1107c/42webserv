@@ -30,8 +30,7 @@ make
 ```
 ./webserv myser_modified.conf
 ```
-- `[configuration file]`을 지정하지 않으면 기본 경로의 설정 파일을 사용합니다 (). 
-- 기본 경로 설정 파일은 테스터기 용이므로 사용하지 말아주세요.
+- `[configuration file]`을 지정하지 않으면 기본 경로의 설정 파일을 사용합니다. 
 
   ## 주요 기능
 
